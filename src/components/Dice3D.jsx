@@ -1,4 +1,5 @@
 import React from 'react';
+import './Dice3D.css';
 
 export default function Dice3D({ value, isRolling, onRoll, disabled }) {
   // Trả về class tương ứng để hiển thị đúng mặt xúc xắc 3D
@@ -21,9 +22,11 @@ export default function Dice3D({ value, isRolling, onRoll, disabled }) {
     }
   };
 
+  const canRoll = !disabled && !isRolling;
+
   return (
     <div 
-      className={`dice-container ${disabled ? 'disabled' : ''}`} 
+      className={`dice-container ${disabled ? 'disabled' : ''} ${canRoll ? 'prompt-pulse' : ''}`} 
       onClick={handleDiceClick}
       style={{ opacity: disabled ? 0.6 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
     >

@@ -1,0 +1,211 @@
+/* --- LOBBY SCREEN (SẢNH CHỜ CHÍNH) --- */
+.lobby-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.lobby-box {
+  width: 100%;
+  max-width: 520px;
+  padding: 40px;
+  text-align: center;
+}
+
+.lobby-title {
+  font-size: 38px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.lobby-subtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.lobby-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.color-choice {
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 4px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.color-choice.red { background: var(--color-red-gradient); }
+.color-choice.green { background: var(--color-green-gradient); }
+.color-choice.yellow { background: var(--color-yellow-gradient); }
+.color-choice.blue { background: var(--color-blue-gradient); }
+
+.color-choice.selected {
+  border-color: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.color-choice.taken {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.color-choice.taken::after {
+  content: '✕';
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* --- PLAYER PANEL (THỂ NGƯỜI CHƠI LOBBY) --- */
+.player-card {
+  padding: 12px 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.player-card.active {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.player-card.active.red { box-shadow: var(--shadow-neon-red); border-color: rgba(255, 71, 87, 0.4); }
+.player-card.active.green { box-shadow: var(--shadow-neon-green); border-color: rgba(46, 213, 115, 0.4); }
+.player-card.active.yellow { box-shadow: var(--shadow-neon-yellow); border-color: rgba(255, 165, 2, 0.4); }
+.player-card.active.blue { box-shadow: var(--shadow-neon-blue); border-color: rgba(30, 144, 255, 0.4); }
+
+.player-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.player-avatar.red { background: var(--color-red-gradient); }
+.player-avatar.green { background: var(--color-green-gradient); }
+.player-avatar.yellow { background: var(--color-yellow-gradient); color: #222; }
+.player-avatar.blue { background: var(--color-blue-gradient); }
+
+.player-info {
+  flex-grow: 1;
+}
+
+.player-name {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-status-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.player-score {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ==========================================
+   RESPONSIVE LOBBY
+   ========================================== */
+@media (max-width: 768px) {
+  .lobby-container {
+    padding: 12px;
+    align-items: center;
+    min-height: calc(100dvh - 52px);
+    overflow-y: auto;
+  }
+
+  .lobby-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px 16px;
+    border-radius: 20px;
+    margin: 0 auto;
+  }
+
+  .lobby-title {
+    font-size: 28px;
+  }
+
+  .lobby-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .lobby-section {
+    gap: 12px;
+  }
+
+  /* Online Lobby 2 cột thành 1 cột xếp dọc */
+  .lobby-box.max-w-4xl {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100dvh - 80px);
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .lobby-box.max-w-4xl > div:first-child {
+    flex-grow: 1;
+  }
+
+  .lobby-box.max-w-4xl .chat-panel {
+    height: 200px;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lobby-title {
+    font-size: 26px;
+  }
+  .lobby-box {
+    padding: 20px 14px;
+  }
+  .color-picker-grid {
+    gap: 8px;
+  }
+}

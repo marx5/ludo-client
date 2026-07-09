@@ -1,0 +1,82 @@
+/* Timer Section Styles */
+.timer-section {
+  width: 100%;
+  max-width: 240px;
+  margin: 10px auto;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.timer-header {
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+  transition: width 0.25s linear, background-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Các trạng thái màu của Timer */
+
+/* 1. Trạng thái an toàn (Time > 15s) - Xanh lá */
+.timer-safe .timer-icon {
+  color: #2ed573;
+}
+.timer-safe .timer-text {
+  color: #2ed573;
+}
+.timer-safe .progress-bar-fill {
+  background: linear-gradient(90deg, #5ed78c, #2ed573);
+  box-shadow: 0 0 8px rgba(46, 213, 115, 0.4);
+}
+
+/* 2. Trạng thái cảnh báo (5s < Time <= 15s) - Cam */
+.timer-warning .timer-icon {
+  color: #ffa502;
+}
+.timer-warning .timer-text {
+  color: #ffa502;
+}
+.timer-warning .progress-bar-fill {
+  background: linear-gradient(90deg, #ffbe42, #ffa502);
+  box-shadow: 0 0 8px rgba(255, 165, 2, 0.4);
+}
+
+/* 3. Trạng thái nguy cấp (Time <= 5s) - Đỏ nhấp nháy */
+.timer-danger .timer-icon {
+  color: #ff4757;
+  animation: timer-flash 0.5s infinite alternate;
+}
+.timer-danger .timer-text {
+  color: #ff4757;
+  animation: timer-flash 0.5s infinite alternate;
+}
+.timer-danger .progress-bar-fill {
+  background: linear-gradient(90deg, #ff6b81, #ff4757);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.8);
+  animation: progress-flash 0.5s infinite alternate;
+}
+
+@keyframes timer-flash {
+  0% { opacity: 0.4; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes progress-flash {
+  0% { filter: brightness(0.8); }
+  100% { filter: brightness(1.3); }
+}

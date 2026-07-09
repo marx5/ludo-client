@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { COMMON_TRACK_COORDS, HOME_STRETCH_COORDS, YARD_COORDS, HOME_COORDS } from '../utils/boardCoordinates';
+import './Board.css';
 
 const GRID_SIZE = 15;
 const START_POSITIONS = { red: 0, green: 13, yellow: 26, blue: 39 };
@@ -70,10 +71,10 @@ export default function Board({ pieces, currentTurnColor, validPiecesToMove = []
             cur += 1;
             if (cur > to) return;
             setDisplay((d) => ({ ...d, [key]: cur }));
-            const t = setTimeout(tick, 180);
+            const t = setTimeout(tick, 240);
             timers.current.push(t);
           };
-          const t0 = setTimeout(tick, 180);
+          const t0 = setTimeout(tick, 240);
           timers.current.push(t0);
         }
         nextDisplay[key] = from; // bắt đầu từ vị trí cũ, effect timer sẽ đẩy lên

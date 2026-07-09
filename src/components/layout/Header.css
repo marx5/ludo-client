@@ -1,0 +1,31 @@
+/* Header game */
+.game-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  margin-bottom: 10px;
+}
+
+.game-title-logo {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e90ff, #ff4757);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Tablet & dưới */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 8px 16px;
+    margin-bottom: 0;
+    height: 52px;
+    border-bottom: 1px solid var(--border-glass);
+  }
+  
+  .game-title-logo {
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,158 @@
+/* --- GAME SCREENS & CONTAINER --- */
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.main-board-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Panel dưới bàn cờ: xúc xắc + chat */
+.below-board-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.below-board-chat {
+  height: 240px;
+}
+
+/* Control Panel (Dành cho việc Đổ xúc xắc / Chọn hành động) */
+.controls-panel {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* --- FLOATING CHAT TOGGLE BUTTON FOR MOBILE --- */
+.chat-toggle-button {
+  display: none; /* Mặc định ẩn trên Desktop */
+}
+
+/* ==========================================
+   RESPONSIVE GAMEPLAY LAYOUT
+   ========================================== */
+@media (max-width: 768px) {
+  /* Tối ưu Layout Trận Đấu (Gameplay) - Vừa khít màn hình */
+  .game-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: calc(100dvh - 52px); /* Trừ chiều cao header */
+    padding: 8px 6px;
+    overflow: hidden;
+  }
+
+  .main-board-panel {
+    width: 100%;
+    max-width: 420px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .below-board-panel {
+    width: 100%;
+    max-width: 420px;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .controls-panel {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  /* Floating Toggle Chat Button nổi ở góc dưới-phải di động */
+  .chat-toggle-button {
+    display: flex;
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 60; /* Nằm trên hộp chat trượt */
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), var(--shadow-neon-blue);
+    background: var(--color-blue);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .chat-toggle-button.expanded {
+    background: #ff4757;
+    box-shadow: var(--shadow-neon-red);
+    transform: rotate(90deg);
+  }
+
+  .chat-toggle-text {
+    display: none; /* Ẩn text trên mobile */
+  }
+
+  /* Chatbox dạng trượt (Slide-up Sheet) từ dưới lên trên Mobile */
+  .mobile-sliding-chat {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: none;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    height: 48dvh;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-sliding-chat.collapsed {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mobile-sliding-chat.expanded {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls-panel {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+}
