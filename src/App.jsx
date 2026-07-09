@@ -460,56 +460,41 @@ export default function App() {
           
           /* B. NẾU ĐÃ VÀO TRẬN ĐẤU -> HIỂN THỊ BÀN CỜ & ĐIỀU KHIỂN */
           <div className="game-layout">
-            
-            {/* Cột trái: Thông tin người chơi & Bảng xúc xắc */}
-            <section className="sidebar-left">
-              <div className="glass-panel p-4 flex flex-col gap-4">
-                <h3 className="text-sm font-bold text-gray-400 flex items-center gap-2 border-b border-white/5 pb-2">
-                  <Shield size={16} />
-                  Thông tin trận đấu
-                </h3>
-                
-                <div className="flex flex-col gap-2">
-                  {gameState.players.map((player, idx) => {
-                    const isCurrent = gameState.currentTurnColor === player.color;
-                    const homePieces = gameState.pieces.filter(p => p.color === player.color && p.stepCount === 58);
-                    
-                    return (
-                      <div 
-                        key={player.id} 
-                        className={`player-card ${isCurrent ? `active ${player.color}` : ''}`}
-                      >
-                        <div className={`player-avatar ${player.color}`}>
-                          {player.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div className="player-info">
-                          <div className="player-name text-ellipsis overflow-hidden whitespace-nowrap" style={{ maxWidth: '140px' }}>
-                            {player.name}
-                            {player.isBot && <span className="player-status-tag bg-white/5 text-[9px] py-0.5">Bot</span>}
-                          </div>
-                          <div className="player-score flex items-center gap-1">
-                            <Trophy size={11} className="text-yellow-400" />
-                            <span>Về đích: {homePieces.length}/4 quân</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
 
-                {gameState.mode === '2vs2' && (
-                  <div className="text-xs text-gray-400 bg-white/5 p-3 rounded-lg border border-white/5">
-                    <strong>Đồng đội:</strong> Đỏ🤝Vàng vs Xanh lá🤝Xanh dương. Đồng đội không đá nhau, cùng đưa hết quân về đích để thắng!
-                  </div>
-                )}
-              </div>
+            {/* Cột giữa: Bàn cờ Ludo 15x15 */}
+            <section className="main-board-panel">
+              {(() => {
+                // Bàn cờ CỐ ĐỊNH theo client: yard của người dùng luôn ở góc dưới-trái.
+                // Không xoay theo lượt, không đổi theo người khác.
+                let myColor;
+                if (gameMode === 'online') {
+                  const me = gameState.players.find(p => p.id === socket?.id);
+                  myColor = me ? me.color : gameState.players[0]?.color;
+                } else {
+                  // Offline: cố định người cầm máy = player đầu tiên (red)
+                  myColor = gameState.players[0]?.color;
+                }
+                return (
+                  <Board
+                    pieces={gameState.pieces}
+                    currentTurnColor={gameState.currentTurnColor}
+                    validPiecesToMove={getMovablePieceIds()}
+                    onPieceClick={gameMode === 'online' ? handleMoveOnlinePiece : handleMoveOfflinePiece}
+                    players={gameState.players}
+                    myColor={myColor}
+                  />
+                );
+              })()}
+            </section>
 
+            {/* Dưới bàn cờ: Xúc xắc + Chat (online) */}
+            <section className="below-board-panel">
               {/* Bảng xúc xắc (Dice controls) */}
               <div className="glass-panel controls-panel flex-grow">
                 <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
                   {gameState.status === 'playing' ? `Lượt đi: ${gameState.currentTurnColor.toUpperCase()}` : 'Trận đấu kết thúc'}
                 </span>
-                
+
                 {gameState.status === 'playing' ? (
                   <>
                     <Dice3D
@@ -518,14 +503,14 @@ export default function App() {
                       onRoll={gameMode === 'online' ? handleRollOnlineDice : handleRollOfflineDice}
                       disabled={!canClientRollDice()}
                     />
-                    
+
                     <div className="text-center">
                       {canClientRollDice() ? (
                         <p className="text-sm text-green-400 font-medium animate-pulse">Đến lượt bạn! Click vào xúc xắc để đổ</p>
                       ) : (
                         <p className="text-sm text-gray-500">
-                          {gameState.players[gameState.turnIndex]?.isBot 
-                            ? 'Máy đang suy nghĩ...' 
+                          {gameState.players[gameState.turnIndex]?.isBot
+                            ? 'Máy đang suy nghĩ...'
                             : `Đang đợi ${gameState.players[gameState.turnIndex]?.name}...`}
                         </p>
                       )}
@@ -542,40 +527,10 @@ export default function App() {
                   </div>
                 )}
               </div>
-            </section>
-
-            {/* Cột giữa: Bàn cờ Ludo 15x15 */}
-            <section className="main-board-panel">
-              <Board
-                pieces={gameState.pieces}
-                currentTurnColor={gameState.currentTurnColor}
-                validPiecesToMove={getMovablePieceIds()}
-                onPieceClick={gameMode === 'online' ? handleMoveOnlinePiece : handleMoveOfflinePiece}
-                players={gameState.players}
-              />
-            </section>
-
-            {/* Cột phải: Chat & Lịch sử hành động */}
-            <section className="sidebar-right">
-              {/* Lịch sử trận đấu (Game logs) */}
-              <div className="glass-panel history-panel">
-                <h3 className="text-sm font-bold text-gray-400 p-4 border-b border-white/5 flex items-center gap-2">
-                  <Clock size={16} />
-                  Lịch sử trận đấu
-                </h3>
-                <div className="history-logs">
-                  {gameState.history.map((log, idx) => (
-                    <div key={idx} className="log-item">
-                      <span className="log-time">[{log.time.split(' ')[0]}]</span>
-                      <span className="log-msg">{log.message}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* Chatbox (chỉ có khi chơi Online) */}
               {gameMode === 'online' && (
-                <div className="glass-panel chat-panel">
+                <div className="glass-panel chat-panel below-board-chat">
                   <h3 className="text-sm font-bold text-gray-400 p-4 border-b border-white/5 flex items-center gap-2">
                     <MessageSquare size={16} />
                     Hộp chat
@@ -595,20 +550,20 @@ export default function App() {
                       ))
                     )}
                   </div>
-                  <form 
+                  <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       if (onlineChatInput.trim()) {
                         handleSendChatMessage(onlineChatInput);
                         setOnlineChatInput('');
                       }
-                    }} 
+                    }}
                     className="chat-input-container"
                   >
-                    <input 
-                      type="text" 
-                      className="glass-input py-2 text-xs flex-grow" 
-                      placeholder="Nhập tin nhắn..." 
+                    <input
+                      type="text"
+                      className="glass-input py-2 text-xs flex-grow"
+                      placeholder="Nhập tin nhắn..."
                       value={onlineChatInput}
                       onChange={(e) => setOnlineChatInput(e.target.value)}
                       maxLength={50}
