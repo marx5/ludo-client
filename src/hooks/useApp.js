@@ -41,7 +41,7 @@ export default function useApp() {
       if (currentPlayer.isBot) return [];
     }
 
-    return getValidPiecesToMove(gameState.currentTurnColor, gameState.diceValue, gameState.pieces).map(p => p.id);
+    return getValidPiecesToMove(gameState.currentTurnColor, gameState.diceValue, gameState.pieces, gameState.mode).map(p => p.id);
   };
 
   // Xác định người chơi có quyền đổ xúc xắc ở client hiện tại hay không

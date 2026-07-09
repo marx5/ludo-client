@@ -3,10 +3,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 22px; /* Tỉ lệ padding tối ưu để avatar chớm ngoài viền không bị cắt */
   width: 100%;
   max-width: 580px;
   margin: 0 auto;
+  box-sizing: border-box;
+  position: relative; /* Định vị tuyệt đối avatar theo các góc của container cha */
 }
 
 .ludo-board {
@@ -137,33 +139,30 @@
 
 .home-triangle {
   position: absolute;
-  width: 0;
-  height: 0;
-  border-style: solid;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .home-triangle.red {
-  top: 0; left: 0;
-  border-width: 55px 0 55px 55px;
-  border-color: transparent transparent transparent rgba(255, 71, 87, 0.8);
+  background-color: rgba(255, 71, 87, 0.8);
+  clip-path: polygon(0 0, 50% 50%, 0 100%);
   filter: drop-shadow(0 0 8px var(--color-red-glow));
 }
 .home-triangle.green {
-  top: 0; left: 0;
-  border-width: 55px 55px 0 55px;
-  border-color: rgba(46, 213, 115, 0.8) transparent transparent transparent;
+  background-color: rgba(46, 213, 115, 0.8);
+  clip-path: polygon(0 0, 50% 50%, 100% 0);
   filter: drop-shadow(0 0 8px var(--color-green-glow));
 }
 .home-triangle.yellow {
-  top: 0; right: 0;
-  border-width: 55px 55px 55px 0;
-  border-color: transparent rgba(255, 165, 2, 0.8) transparent transparent;
+  background-color: rgba(255, 165, 2, 0.8);
+  clip-path: polygon(100% 0, 50% 50%, 100% 100%);
   filter: drop-shadow(0 0 8px var(--color-yellow-glow));
 }
 .home-triangle.blue {
-  bottom: 0; left: 0;
-  border-width: 0 55px 55px 55px;
-  border-color: transparent transparent rgba(30, 144, 255, 0.8) transparent;
+  background-color: rgba(30, 144, 255, 0.8);
+  clip-path: polygon(0 100%, 50% 50%, 100% 100%);
   filter: drop-shadow(0 0 8px var(--color-blue-glow));
 }
 
@@ -228,17 +227,17 @@
 
 @keyframes pulse-glow {
   0% {
-    transform: translate(-50%, -50%) scale(1.0) translateY(0);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 0px 0px rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%) scale(1.0);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 0px 0px rgba(255, 255, 255, 0.3);
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.2) translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 15px 4px rgba(255, 255, 255, 0.8);
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6), 0 0 15px 6px rgba(255, 255, 255, 0.7);
   }
 }
 
 .piece.movable:hover {
-  transform: translate(-50%, -50%) scale(1.3) translateY(-6px);
+  transform: translate(-50%, -50%) scale(1.25);
   filter: brightness(1.2);
 }
 
@@ -253,22 +252,28 @@
 }
 
 .piece.stacked {
-  position: relative !important;
-  margin: -6px;
-  transform: translate(-50%, -50%) scale(0.85);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transform: translate(-50%, -50%) scale(0.55);
+  box-shadow: 0 1.5px 4px rgba(0,0,0,0.4);
+  border-width: 1.5px;
 }
 
 .piece.stacked.movable {
   animation: pulse-glow-stacked 1.2s infinite alternate;
 }
 
+.piece.stacked.movable:hover {
+  transform: translate(-50%, -50%) scale(0.75);
+  z-index: 30 !important;
+}
+
 @keyframes pulse-glow-stacked {
   0% {
-    transform: translate(-50%, -50%) scale(0.85) translateY(0);
+    transform: translate(-50%, -50%) scale(0.55);
+    box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.4), 0 0 0px 0px rgba(255, 255, 255, 0.3);
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.0) translateY(-2px);
+    transform: translate(-50%, -50%) scale(0.68);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), 0 0 8px 3px rgba(255, 255, 255, 0.7);
   }
 }
 
@@ -286,7 +291,7 @@
     width: 100%;
     max-width: 88vw; /* Giới hạn chiều rộng bàn cờ */
     aspect-ratio: 1 / 1;
-    padding: 2px;
+    padding: 16px; /* Tỉ lệ padding tối ưu trên Tablet */
   }
 
   .ludo-board {
@@ -298,6 +303,7 @@
 @media (max-width: 480px) {
   .ludo-board-container {
     max-width: 92vw;
+    padding: 14px; /* Tỉ lệ padding tối ưu trên Mobile */
   }
 
   /* Thu nhỏ quân cờ */
@@ -313,6 +319,114 @@
   }
 }
 
+/* Mũi tên chỉ hướng rẽ vào đường đích (Entrance Arrow) */
+.entrance-arrow {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  animation: arrow-pulse 2s infinite ease-in-out;
+}
+
+.entrance-arrow svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+/* Xoay mũi tên theo đúng hướng rẽ tuyệt đối */
+.entrance-arrow.arrow-right svg {
+  transform: rotate(90deg);
+}
+.entrance-arrow.arrow-down svg {
+  transform: rotate(180deg);
+}
+.entrance-arrow.arrow-left svg {
+  transform: rotate(270deg);
+}
+.entrance-arrow.arrow-up svg {
+  transform: rotate(0deg);
+}
+
+/* Màu sắc và hiệu ứng phát sáng của các mũi tên */
+.entrance-arrow.arrow-red {
+  color: rgba(255, 71, 87, 0.85);
+  filter: drop-shadow(0 0 4px var(--color-red-glow));
+}
+.entrance-arrow.arrow-green {
+  color: rgba(46, 213, 115, 0.85);
+  filter: drop-shadow(0 0 4px var(--color-green-glow));
+}
+.entrance-arrow.arrow-yellow {
+  color: rgba(255, 165, 2, 0.85);
+  filter: drop-shadow(0 0 4px var(--color-yellow-glow));
+}
+.entrance-arrow.arrow-blue {
+  color: rgba(30, 144, 255, 0.85);
+  filter: drop-shadow(0 0 4px var(--color-blue-glow));
+}
+
+@keyframes arrow-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
+}
+
+/* Dải viền tiến trình đếm ngược bao quanh ô Yard sân nhà */
+.yard-timer-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2; /* Nằm trên nền ô Yard, dưới các túi pocket */
+}
+
+.yard-timer-svg rect {
+  transition: stroke-dashoffset 0.25s linear, stroke 0.5s ease;
+}
+
+/* Các màu sắc viền dựa trên thời gian còn lại */
+
+/* 1. Trạng thái an toàn (Xanh lá phát sáng mờ quanh viền) */
+.yard-timer-svg.timer-safe rect {
+  stroke: #2ed573;
+  filter: drop-shadow(0 0 5px rgba(46, 213, 115, 0.7));
+}
+
+/* 2. Trạng thái cảnh báo (Cam) */
+.yard-timer-svg.timer-warning rect {
+  stroke: #ffa502;
+  filter: drop-shadow(0 0 7px rgba(255, 165, 2, 0.8));
+}
+
+/* 3. Trạng thái nguy cấp (Đỏ nhấp nháy phát sáng mạnh) */
+.yard-timer-svg.timer-danger rect {
+  stroke: #ff4757;
+  filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.9));
+  animation: border-danger-flash 0.5s infinite alternate;
+}
+
+@keyframes border-danger-flash {
+  0% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 4px rgba(255, 71, 87, 0.5));
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 12px rgba(255, 71, 87, 1.0));
+  }
+}
+
+
 @media (max-width: 360px) {
   .ludo-board-container {
     max-width: 95vw;
@@ -326,4 +440,137 @@
   .ludo-board {
     border-radius: 12px;
   }
+}
+
+/* Corner Player Avatars Styles */
+.yard-avatar-container {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 15;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+}
+
+/* Xếp ngang chéo theo góc màn hình */
+.yard-avatar-container.top-left-corner,
+.yard-avatar-container.bottom-left-corner {
+  flex-direction: row;
+}
+
+.yard-avatar-container.top-right-corner,
+.yard-avatar-container.bottom-right-corner {
+  flex-direction: row-reverse;
+}
+
+/* Định vị chớm chéo ngoài viền bàn cờ */
+.yard-avatar-container.top-left-corner {
+  top: -24px;
+  left: -16px;
+}
+.yard-avatar-container.top-right-corner {
+  top: -24px;
+  right: -16px;
+}
+.yard-avatar-container.bottom-left-corner {
+  bottom: -24px;
+  left: -16px;
+}
+.yard-avatar-container.bottom-right-corner {
+  bottom: -24px;
+  right: -16px;
+}
+
+.yard-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  border: 2px solid var(--player-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.yard-avatar-container.red .yard-avatar { --player-color: #ef4444; }
+.yard-avatar-container.green .yard-avatar { --player-color: #10b981; }
+.yard-avatar-container.yellow .yard-avatar { --player-color: #f59e0b; }
+.yard-avatar-container.blue .yard-avatar { --player-color: #3b82f6; }
+
+.avatar-icon {
+  font-size: 16px;
+  user-select: none;
+}
+
+.yard-avatar.active-turn {
+  animation: avatar-pulse 1.5s infinite alternate;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 12px 3px var(--player-color);
+}
+
+@keyframes avatar-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 8px 1px var(--player-color);
+  }
+  100% {
+    transform: scale(1.12);
+    box-shadow: 0 0 16px 5px var(--player-color);
+  }
+}
+
+.yard-avatar-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 2px 6px;
+  border-radius: 10px;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  user-select: none;
+}
+
+/* Điều chỉnh responsive cho avatar trên màn hình nhỏ */
+@media (max-width: 480px) {
+  .yard-avatar {
+    width: 26px;
+    height: 26px;
+    border-width: 1.5px;
+  }
+  .avatar-icon {
+    font-size: 12px;
+  }
+  .yard-avatar-name {
+    font-size: 8px;
+    padding: 1px 4px;
+    max-width: 60px;
+  }
+  .yard-avatar-container.top-left-corner { top: -16px; left: -12px; }
+  .yard-avatar-container.top-right-corner { top: -16px; right: -12px; }
+  .yard-avatar-container.bottom-left-corner { bottom: -16px; left: -12px; }
+  .yard-avatar-container.bottom-right-corner { bottom: -16px; right: -12px; }
+}
+
+
+/* Quân cờ về đích thu nhỏ để chụm đầu ở đích gọn gàng, không đè lấn lên nhau */
+.piece.finished-piece {
+  width: 18px;
+  height: 18px;
+  border-width: 1.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.piece.finished-piece::after {
+  width: 5px;
+  height: 5px;
 }

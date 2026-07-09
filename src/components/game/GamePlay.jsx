@@ -28,6 +28,7 @@ export default function GamePlay({
           onPieceClick={isOnline ? online.handleMoveOnlinePiece : offline.handleMoveOfflinePiece}
           players={gameState.players}
           myColor={getMyColor()}
+          timerEndAt={gameState.timerEndAt}
         />
       </section>
 

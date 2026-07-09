@@ -69,7 +69,7 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
       nextState.diceValue = diceVal;
       nextState.hasRolled = true;
       nextState.lastActionTime = Date.now();
-      nextState.timerEndAt = Date.now() + 60000; // Đặt hạn chót đi cờ (60s)
+      nextState.timerEndAt = Date.now() + 30000; // Đặt hạn chót đi cờ (30s)
 
       if (pityActivated) {
         nextState.history.unshift({
@@ -83,8 +83,16 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
         message: `${currentPlayer.name} (${nextState.currentTurnColor}) đã đổ được ${diceVal} điểm.`
       });
 
+      if (diceVal === 6 && nextState.consecutiveSixes >= 2) {
+        // Đổ 6 ba lần liên tiếp -> Bị phạt mất lượt chơi và chuyển ngay sang người tiếp theo
+        const stateAfterSkip = switchToNextTurn(nextState);
+        setGameState(stateAfterSkip);
+        triggerOfflineBotTurn(stateAfterSkip);
+        return;
+      }
+
       // Kiểm tra xem có quân nào di chuyển được không
-      const validPieces = getValidPiecesToMove(nextState.currentTurnColor, diceVal, nextState.pieces);
+      const validPieces = getValidPiecesToMove(nextState.currentTurnColor, diceVal, nextState.pieces, nextState.mode);
       
       if (validPieces.length === 0) {
         // Không đi được quân nào -> Tự động chuyển lượt sau 1.5 giây
@@ -120,17 +128,31 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
     // Phát âm thanh di chuyển cờ (Offline)
     playAudioForPiecesTransition(state.pieces, afterMoveState.pieces);
 
-    let finalState = afterMoveState;
-    if (afterMoveState.status === 'playing') {
-      finalState = switchToNextTurn(afterMoveState);
-    }
+    // Cập nhật vị trí mới để chạy hoạt cảnh di chuyển cờ (chưa chuyển lượt)
+    setGameState(afterMoveState);
 
-    setGameState(finalState);
+    // Tính toán độ trễ dựa trên số bước nhảy của quân cờ tiến và quân cờ bị đá chạy lùi (nếu có)
+    const oldPiece = state.pieces.find(p => p.color === color && p.id === pieceId);
+    const steps = (oldPiece && oldPiece.position === -1) ? 1 : state.diceValue;
+    const durationForward = steps * 240 + 200; // 240ms mỗi ô lò cò + 200ms dừng chân
 
-    // Kích hoạt Bot đi tiếp theo
-    if (finalState.status === 'playing') {
-      triggerOfflineBotTurn(finalState);
-    }
+    const kickedPiece = state.pieces.find(p => p.position !== -1 && afterMoveState.pieces.find(ap => ap.color === p.color && ap.id === p.id).position === -1);
+    const durationBackward = kickedPiece ? (durationForward + kickedPiece.stepCount * 60 + 100) : 0; // thời gian lùi bắt đầu sau khi quân tiến đi xong
+
+    const delay = kickedPiece ? durationBackward : durationForward;
+
+    setTimeout(() => {
+      const activeState = gameStateRef.current;
+      if (activeState && activeState.status === 'playing' && activeState.hasMoved) {
+        const finalState = switchToNextTurn(activeState);
+        setGameState(finalState);
+
+        // Kích hoạt Bot đi tiếp theo
+        if (finalState.status === 'playing' && finalState.players[finalState.turnIndex]?.isBot) {
+          triggerOfflineBotTurn(finalState);
+        }
+      }
+    }, delay);
   };
 
   // 4. Kích hoạt lượt Bot Offline (Đệ quy)
@@ -176,7 +198,7 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
           const stateBeforeMove = gameStateRef.current;
           if (!stateBeforeMove || stateBeforeMove.status !== 'playing') return;
 
-          const validPieces = getValidPiecesToMove(currentTurnColor, diceVal, stateBeforeMove.pieces);
+          const validPieces = getValidPiecesToMove(currentTurnColor, diceVal, stateBeforeMove.pieces, stateBeforeMove.mode);
 
           if (validPieces.length === 0) {
             stateBeforeMove.history.unshift({
@@ -200,16 +222,32 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
             // Phát âm thanh di chuyển cho Bot Offline
             playAudioForPiecesTransition(stateBeforeMove.pieces, afterMoveState.pieces);
             
-            let finalState = afterMoveState;
-            
-            if (afterMoveState.status === 'playing') {
-              finalState = switchToNextTurn(afterMoveState);
-            }
+            // Đầu tiên, cập nhật vị trí mới để chạy hoạt cảnh di chuyển cờ (chưa chuyển lượt)
+            setGameState(afterMoveState);
 
-            setGameState(finalState);
+            // Tính toán độ trễ dựa trên số bước nhảy của quân cờ tiến và quân cờ bị đá chạy lùi (nếu có)
+            const oldPiece = stateBeforeMove.pieces.find(p => p.color === currentTurnColor && p.id === chosenPieceId);
+            const steps = (oldPiece && oldPiece.position === -1) ? 1 : diceVal;
+            const durationForward = steps * 240 + 200;
 
-            // Tiếp tục đệ quy nếu lượt kế tiếp vẫn là Bot
-            triggerOfflineBotTurn(finalState);
+            const kickedPiece = stateBeforeMove.pieces.find(p => p.position !== -1 && afterMoveState.pieces.find(ap => ap.color === p.color && ap.id === p.id).position === -1);
+            const durationBackward = kickedPiece ? (durationForward + kickedPiece.stepCount * 60 + 100) : 0; // thời gian lùi bắt đầu sau khi quân tiến đi xong
+
+            const delay = kickedPiece ? durationBackward : durationForward;
+
+            setTimeout(() => {
+              const activeState = gameStateRef.current;
+              if (activeState && activeState.status === 'playing' && activeState.hasMoved) {
+                let finalState = afterMoveState;
+                if (afterMoveState.status === 'playing') {
+                  finalState = switchToNextTurn(afterMoveState);
+                }
+                setGameState(finalState);
+
+                // Tiếp tục đệ quy nếu lượt kế tiếp vẫn là Bot
+                triggerOfflineBotTurn(finalState);
+              }
+            }, delay);
           }
         }, 1500);
 
@@ -277,7 +315,7 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
             const chosenPiece = validPieces[0];
             activeState.history.unshift({
               time: new Date().toLocaleTimeString(),
-              message: `[Hệ thống] Hết thời gian 60s! Tự động đi quân #${chosenPiece.id + 1} cho ${currentPlayer.name}.`
+              message: `[Hệ thống] Hết thời gian 30s! Tự động đi quân #${chosenPiece.id + 1} cho ${currentPlayer.name}.`
             });
             handleMoveOfflinePiece(activeState.currentTurnColor, chosenPiece.id);
           }

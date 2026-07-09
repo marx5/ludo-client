@@ -8,9 +8,6 @@ export default function Header({ gameMode, isConnected, gameState, onQuitGame })
       <div className="flex items-center gap-2">
         <Sparkles className="text-yellow-400" size={20} />
         <span className="game-title-logo">Ludo World</span>
-        <span className="text-[10px] bg-white/10 text-gray-400 py-1 px-2 rounded font-mono uppercase tracking-wider">
-          v1.2 Premium
-        </span>
       </div>
       
       <div className="flex items-center gap-4">
