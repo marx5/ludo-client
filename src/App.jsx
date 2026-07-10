@@ -21,7 +21,11 @@ export default function App() {
     canClientRollDice,
     getMyColor,
     handleQuitGame,
-    modalConfig
+    modalConfig,
+    handleRollDice,
+    handleMovePiece,
+    isAutoPlay,
+    setIsAutoPlay
   } = useApp();
 
   const [authMode, setAuthMode] = useState(() => localStorage.getItem('ludo_auth_mode') || null);
@@ -108,6 +112,10 @@ export default function App() {
             getMyColor={getMyColor}
             online={online}
             offline={offline}
+            onRollDice={handleRollDice}
+            onMovePiece={handleMovePiece}
+            isAutoPlay={isAutoPlay}
+            setIsAutoPlay={setIsAutoPlay}
           />
         )}
       </main>

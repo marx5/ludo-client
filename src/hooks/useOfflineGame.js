@@ -278,7 +278,7 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
         if (activeState && !activeState.hasRolled && activeState.status === 'playing') {
           activeState.history.unshift({
             time: new Date().toLocaleTimeString(),
-            message: `[Hệ thống] Hết thời gian 20s! Tự động đổ xúc xắc cho ${currentPlayer.name}.`
+            message: `[Hệ thống] Hết thời gian 15s! Tự động đổ xúc xắc cho ${currentPlayer.name}.`
           });
           handleRollOfflineDice();
         }
@@ -293,7 +293,7 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
             const chosenPiece = validPieces[0];
             activeState.history.unshift({
               time: new Date().toLocaleTimeString(),
-              message: `[Hệ thống] Hết thời gian 30s! Tự động đi quân #${chosenPiece.id + 1} cho ${currentPlayer.name}.`
+              message: `[Hệ thống] Hết thời gian 15s! Tự động đi quân #${chosenPiece.id + 1} cho ${currentPlayer.name}.`
             });
             handleMoveOfflinePiece(activeState.currentTurnColor, chosenPiece.id);
           }

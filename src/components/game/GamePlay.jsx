@@ -17,7 +17,11 @@ export default function GamePlay({
   canClientRollDice,
   getMyColor,
   online,
-  offline
+  offline,
+  onRollDice,
+  onMovePiece,
+  isAutoPlay,
+  setIsAutoPlay
 }) {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [activeToasts, setActiveToasts] = useState([]);
@@ -70,15 +74,14 @@ export default function GamePlay({
 
   useEffect(() => {
     const handlePieceClick = ({ color, id }) => {
-      const onPieceClick = isOnline ? online.handleMoveOnlinePiece : offline.handleMoveOfflinePiece;
-      onPieceClick(color, id);
+      onMovePiece(color, id);
     };
     
     EventBus.on('piece-clicked', handlePieceClick);
     return () => {
       EventBus.off('piece-clicked', handlePieceClick);
     };
-  }, [isOnline, online, offline]);
+  }, [onMovePiece]);
 
   const myColor = getMyColor() || 'blue';
   
@@ -157,12 +160,15 @@ export default function GamePlay({
           )}
 
           {/* Xúc xắc chính ở giữa hai thẻ người chơi dưới */}
-          <div className={`flex justify-center items-center ${gameState?.currentTurnColor === myColor ? '' : 'invisible pointer-events-none'}`}>
+          <div className={`flex justify-center items-center ${gameState?.currentTurnColor === myColor || isAutoPlay ? '' : 'invisible pointer-events-none'}`}>
             <GameControls
               gameState={gameState}
               isRolling={isRolling}
               canClientRollDice={canClientRollDice()}
-              onRollDice={isOnline ? online.handleRollOnlineDice : offline.handleRollOfflineDice}
+              onRollDice={onRollDice}
+              isAutoPlay={isAutoPlay}
+              setIsAutoPlay={setIsAutoPlay}
+              myColor={myColor}
             />
           </div>
 

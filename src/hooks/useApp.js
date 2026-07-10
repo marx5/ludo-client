@@ -6,6 +6,8 @@ import { getValidPiecesToMove } from '../utils/gameEngine';
 export default function useApp() {
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('ludo_player_name') || '');
   const [gameMode, setGameMode] = useState(null); // 'offline' | 'online'
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [hasTimedOutOnRoll, setHasTimedOutOnRoll] = useState(false);
 
   // Quản lý Custom Modal State
   const [modalConfig, setModalConfig] = useState({
@@ -48,6 +50,84 @@ export default function useApp() {
   
   const gameState = activeGame.gameState;
   const isRolling = activeGame.isRolling;
+
+  // Reset trạng thái tự động chơi khi chuyển game hoặc kết thúc
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'playing') {
+      setIsAutoPlay(false);
+      setHasTimedOutOnRoll(false);
+    }
+  }, [gameState?.status]);
+
+  // Wrapper thực hiện hành động và reset trạng thái AFK khi người dùng tự tương tác
+  const handleRollDice = () => {
+    setHasTimedOutOnRoll(false);
+    if (isOnline) {
+      online.handleRollOnlineDice();
+    } else {
+      offline.handleRollOfflineDice();
+    }
+  };
+
+  const handleMovePiece = (color, pieceId) => {
+    setHasTimedOutOnRoll(false);
+    if (isOnline) {
+      online.handleMoveOnlinePiece(color, pieceId);
+    } else {
+      offline.handleMoveOfflinePiece(color, pieceId);
+    }
+  };
+
+  // Lắng nghe lịch sử hệ thống để phát hiện vắng mặt (AFK)
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'playing' || isAutoPlay) return;
+
+    const latestMessage = gameState.history[0]?.message;
+    if (!latestMessage || !latestMessage.includes('[Hệ thống] Hết thời gian 15s!')) return;
+
+    // Xác định xem tin nhắn hết giờ này có dành cho người chơi (human) hay không
+    const isTargetPlayer = isOnline
+      ? latestMessage.includes(`cho ${playerName}`)
+      : !gameState.players.find(p => latestMessage.includes(`cho ${p.name}`))?.isBot;
+
+    if (!isTargetPlayer) return;
+
+    if (latestMessage.includes('đổ xúc xắc')) {
+      setHasTimedOutOnRoll(true);
+    } else if (latestMessage.includes('đi quân')) {
+      if (hasTimedOutOnRoll) {
+        setIsAutoPlay(true);
+      }
+      setHasTimedOutOnRoll(false); // Reset sau lượt đi
+    }
+  }, [gameState, isAutoPlay, hasTimedOutOnRoll, isOnline, playerName]);
+
+  // Tự động đổ và đi cờ khi bật Auto Play
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'playing' || !isAutoPlay) return;
+
+    // Chỉ tự động chơi nếu là lượt của mình
+    const isMyTurn = isOnline 
+      ? gameState.players.find(p => p.color === gameState.currentTurnColor)?.id === online.socket?.id
+      : !gameState.players[gameState.turnIndex]?.isBot;
+
+    if (!isMyTurn) return;
+
+    if (!gameState.hasRolled && !isRolling) {
+      const timer = setTimeout(() => {
+        handleRollDice();
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else if (gameState.hasRolled && !gameState.hasMoved) {
+      const timer = setTimeout(() => {
+        const validPieces = getValidPiecesToMove(gameState.currentTurnColor, gameState.diceValue, gameState.pieces, gameState.mode);
+        if (validPieces.length > 0) {
+          handleMovePiece(gameState.currentTurnColor, validPieces[0].id);
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState?.currentTurnColor, gameState?.hasRolled, gameState?.hasMoved, isAutoPlay, isRolling, isOnline]);
 
   // Xử lý thoát game
   const handleQuitGame = () => {
@@ -113,6 +193,10 @@ export default function useApp() {
     getMyColor,
     handleQuitGame,
     modalConfig,
-    showModal
+    showModal,
+    handleRollDice,
+    handleMovePiece,
+    isAutoPlay,
+    setIsAutoPlay
   };
 }
