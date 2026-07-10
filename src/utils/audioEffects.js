@@ -153,3 +153,109 @@ export function playWinSound() {
     console.warn('Audio play failed:', err);
   }
 }
+
+// 5. Âm thanh nhảy 1 bước (Step Hop)
+// Tiếng "pop" cực ngắn, tần số tăng nhanh từ 240Hz lên 480Hz trong 0.08s
+export function playStepSound() {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(240, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(480, ctx.currentTime + 0.08);
+    
+    gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  } catch (err) {
+    console.warn('Audio play failed:', err);
+  }
+}
+
+// 6. Âm thanh tấn công đá quân (Kick Attack)
+// Tiếng xoẹt chém (Sword slash) mạnh mẽ quét tần số từ thấp lên cao cực nhanh
+export function playKickAttackSound() {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  } catch (err) {
+    console.warn('Audio play failed:', err);
+  }
+}
+
+// 7. Âm thanh quân bị đá bay về chuồng (Kicked Flee / Falling)
+// Tiếng rơi rụng quét tần số từ cao xuống thấp chậm rãi kèm âm lượng nhỏ dần
+export function playKickedFleeSound() {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.5);
+    
+    gainNode.gain.setValueAtTime(0.22, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (err) {
+    console.warn('Audio play failed:', err);
+  }
+}
+
+// 8. Âm thanh nhảy vào ô an toàn (Safe Zone Sparkle)
+// Hợp âm rải (arpeggio) các nốt cao thánh thót đô-mi-sol-đố giống tiếng lấp lánh phép thuật
+export function playSafeZoneSound() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const notes = [1046.50, 1318.51, 1567.98, 2093.00]; // Đô6 - Mi6 - Sol6 - Đô7
+    
+    notes.forEach((freq, index) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + index * 0.04);
+      
+      gainNode.gain.setValueAtTime(0, now + index * 0.04);
+      gainNode.gain.linearRampToValueAtTime(0.1, now + index * 0.04 + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + index * 0.04 + 0.2);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      osc.start(now + index * 0.04);
+      osc.stop(now + index * 0.04 + 0.2);
+    });
+  } catch (err) {
+    console.warn('Audio play failed:', err);
+  }
+}
+

@@ -1,118 +1,96 @@
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, User, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function OfflineSetup({ playerName, onGoBack, onStartOfflineGame }) {
-  const [offlineMode, setOfflineMode] = useState('classic'); // 'classic' | '1vs1' | '2vs2'
-  const [offlinePlayersCount, setOfflinePlayersCount] = useState(2); // 1, 2, 3, 4
+  const [offlineMode, setOfflineMode] = useState('1vs1'); // '1vs1' | '2vs2'
 
   const handleStartSetup = () => {
     const playersList = [];
     
     if (offlineMode === '1vs1') {
-      playersList.push({ id: 'player-red', name: playerName || 'Bạn (Đỏ)', color: 'red', isBot: false });
-      playersList.push({ id: 'bot-yellow', name: 'Máy (Vàng)', color: 'yellow', isBot: true });
-    } else if (offlineMode === '2vs2') {
-      playersList.push({ id: 'player-red', name: playerName || 'Bạn (Đỏ)', color: 'red', isBot: false });
-      playersList.push({ id: 'bot-green', name: 'Đồng đội Máy (Xanh lá)', color: 'green', isBot: true });
-      playersList.push({ id: 'bot-yellow', name: 'Đối thủ Máy (Vàng)', color: 'yellow', isBot: true });
-      playersList.push({ id: 'bot-blue', name: 'Đối thủ Máy (Xanh dương)', color: 'blue', isBot: true });
+      playersList.push({ id: 'player-red', name: playerName || 'Bạn', color: 'red', isBot: false });
+      playersList.push({ id: 'bot-yellow', name: 'Máy', color: 'yellow', isBot: true });
     } else {
-      const colors = ['red', 'green', 'yellow', 'blue'];
-      
-      // Thêm người chơi thật
-      for (let i = 0; i < offlinePlayersCount; i++) {
-        playersList.push({
-          id: `player-${colors[i]}`,
-          name: i === 0 ? (playerName || 'Bạn (Đỏ)') : `Người chơi ${i + 1} (${colors[i].toUpperCase()})`,
-          color: colors[i],
-          isBot: false
-        });
-      }
-      
-      // Thêm Bot điền đầy cho đủ 4 vị trí
-      for (let i = offlinePlayersCount; i < 4; i++) {
-        playersList.push({
-          id: `bot-${colors[i]}`,
-          name: `Máy (${colors[i].toUpperCase()})`,
-          color: colors[i],
-          isBot: true
-        });
-      }
+      playersList.push({ id: 'player-red', name: playerName || 'Bạn', color: 'red', isBot: false });
+      playersList.push({ id: 'bot-green', name: 'Máy', color: 'green', isBot: true });
+      playersList.push({ id: 'bot-yellow', name: 'Máy', color: 'yellow', isBot: true });
+      playersList.push({ id: 'bot-blue', name: 'Máy', color: 'blue', isBot: true });
     }
 
     onStartOfflineGame(playersList, offlineMode);
   };
 
   return (
-    <div className="lobby-box glass-panel">
-      <h2 className="lobby-title text-2xl mb-2">Cấu Hình Offline</h2>
-      <p className="lobby-subtitle">Chọn chế độ chơi và số lượng người chơi</p>
+    <div className="lobby-box glass-panel max-w-md mx-auto">
+      <h2 className="lobby-title text-2xl font-black text-center mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-purple-400">
+        Cấu Hình Đấu Với Máy
+      </h2>
+      <p className="lobby-subtitle text-xs text-gray-400 text-center mb-6">Chọn chế độ chơi để bắt đầu</p>
 
       <div className="lobby-section text-left">
-        {/* Chế độ chơi */}
-        <div className="mb-4">
-          <span className="block text-sm font-semibold text-gray-400 mb-2">Chế độ chơi:</span>
-          <div className="grid grid-cols-3 gap-2">
-            <button 
-              className={`glass-button text-sm py-2 px-3 ${offlineMode === 'classic' ? 'active' : ''}`}
-              onClick={() => setOfflineMode('classic')}
-            >
-              Cổ điển (4P)
-            </button>
-            <button 
-              className={`glass-button text-sm py-2 px-3 ${offlineMode === '1vs1' ? 'active' : ''}`}
-              onClick={() => setOfflineMode('1vs1')}
-            >
-              Solo 1vs1
-            </button>
-            <button 
-              className={`glass-button text-sm py-2 px-3 ${offlineMode === '2vs2' ? 'active' : ''}`}
-              onClick={() => setOfflineMode('2vs2')}
-            >
-              Đồng Đội 2vs2
-            </button>
+        {/* Cards Selection */}
+        <div className="grid grid-cols-2 gap-4 mb-5">
+          {/* Card 1: Solo 1vs1 */}
+          <div 
+            onClick={() => setOfflineMode('1vs1')}
+            className={`cursor-pointer flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-300 select-none ${
+              offlineMode === '1vs1' 
+                ? 'bg-blue-500/10 border-blue-500/80 shadow-[0_0_20px_rgba(59,130,246,0.15)] scale-[1.02]' 
+                : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03] hover:border-white/10'
+            }`}
+          >
+            <div className={`p-3 rounded-xl mb-3 transition-colors ${offlineMode === '1vs1' ? 'bg-blue-500/20 text-blue-400' : 'bg-white/5 text-gray-400'}`}>
+              <User size={24} />
+            </div>
+            <h3 className={`font-bold text-base ${offlineMode === '1vs1' ? 'text-blue-300' : 'text-gray-300'}`}>1vs1</h3>
+          </div>
+
+          {/* Card 2: Team 2vs2 */}
+          <div 
+            onClick={() => setOfflineMode('2vs2')}
+            className={`cursor-pointer flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-300 select-none ${
+              offlineMode === '2vs2' 
+                ? 'bg-purple-500/10 border-purple-500/80 shadow-[0_0_20px_rgba(168,85,247,0.15)] scale-[1.02]' 
+                : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03] hover:border-white/10'
+            }`}
+          >
+            <div className={`p-3 rounded-xl mb-3 transition-colors ${offlineMode === '2vs2' ? 'bg-purple-500/20 text-purple-400' : 'bg-white/5 text-gray-400'}`}>
+              <Users size={24} />
+            </div>
+            <h3 className={`font-bold text-base ${offlineMode === '2vs2' ? 'text-purple-300' : 'text-gray-300'}`}>2vs2</h3>
           </div>
         </div>
 
-        {/* Số người chơi thật (chỉ hiển thị ở chế độ classic) */}
-        {offlineMode === 'classic' && (
-          <div className="mb-4">
-            <span className="block text-sm font-semibold text-gray-400 mb-2">Số người chơi thật (Local Multiplayer):</span>
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3, 4].map(num => (
-                <button 
-                  key={num}
-                  className={`glass-button text-sm py-2 ${offlinePlayersCount === num ? 'active' : ''}`}
-                  onClick={() => setOfflinePlayersCount(num)}
-                >
-                  {num} người chơi
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              * Các vị trí còn lại sẽ tự động điền Bot AI cho đủ 4 người chơi.
+        {/* Mode Descriptions */}
+        <div className="bg-black/30 border border-white/5 p-4 rounded-xl min-h-[76px] flex items-center transition-all duration-300">
+          {offlineMode === '1vs1' ? (
+            <p className="text-xs text-gray-300 leading-relaxed">
+              💡 <strong>1vs1:</strong> Bạn đấu trực tiếp với Máy. Lượt đi diễn ra cực nhanh, dồn dập và kịch tính.
             </p>
-          </div>
-        )}
+          ) : (
+            <p className="text-xs text-gray-300 leading-relaxed">
+              💡 <strong>2vs2:</strong> Bạn bắt cặp với Máy tạo thành một đội, hợp sức đấu lại hai Máy đối thủ.
+            </p>
+          )}
+        </div>
 
-        {offlineMode === '1vs1' && (
-          <p className="text-sm text-gray-400 bg-black/20 p-3 rounded-lg">
-            <strong>Solo 1vs1:</strong> Bạn (màu Đỏ) đấu trực tiếp với máy (màu Vàng). Lượt đi diễn ra nhanh và gay cấn hơn.
-          </p>
-        )}
-
-        {offlineMode === '2vs2' && (
-          <p className="text-sm text-gray-400 bg-black/20 p-3 rounded-lg">
-            <strong>Đồng Đội 2vs2:</strong> Bạn (Đỏ) và Đồng đội máy (Xanh lá) đấu với đội máy (Vàng và Xanh dương).
-          </p>
-        )}
-
+        {/* Buttons */}
         <div className="grid grid-cols-2 gap-4 mt-8">
-          <button className="glass-button" onClick={onGoBack}>Quay lại</button>
-          <button className="glass-button active" onClick={handleStartSetup}>
+          <Button 
+            variant="outline" 
+            onClick={onGoBack}
+            className="border-white/10 hover:bg-white/5 text-gray-300 font-medium"
+          >
+            Quay lại
+          </Button>
+          <Button 
+            className="bg-blue-600 hover:bg-blue-500 border border-blue-500/50 text-white font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300" 
+            onClick={handleStartSetup}
+          >
             Bắt đầu
-            <ArrowRight size={18} />
-          </button>
+            <ArrowRight size={16} className="ml-2" />
+          </Button>
         </div>
       </div>
     </div>

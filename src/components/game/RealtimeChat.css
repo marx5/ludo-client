@@ -46,8 +46,7 @@
    ========================================== */
 @media (max-width: 480px) {
   /* Input chat font 16px để iOS không tự động zoom màn hình */
-  .glass-input {
+  input[data-slot="input"] {
     font-size: 16px;
-    padding: 10px 14px;
   }
 }

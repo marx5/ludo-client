@@ -1,6 +1,8 @@
 import React from 'react';
 import './ErrorModal.css';
 
+import { Button } from '@/components/ui/button';
+
 export default function ErrorModal({ errorMessage, onClose }) {
   if (!errorMessage) return null;
 
@@ -9,9 +11,9 @@ export default function ErrorModal({ errorMessage, onClose }) {
       <div className="modal-content glass-panel">
         <h3 className="text-lg font-bold text-red-400 mb-2">Đã xảy ra lỗi</h3>
         <p className="text-gray-300 text-sm mb-6">{errorMessage}</p>
-        <button className="glass-button active py-2 px-6" onClick={onClose}>
+        <Button variant="default" className="w-full" onClick={onClose}>
           Đóng
-        </button>
+        </Button>
       </div>
     </div>
   );

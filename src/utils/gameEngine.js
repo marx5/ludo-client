@@ -33,13 +33,13 @@ export function getBoardPosition(color, stepCount) {
   if (stepCount === 58) return 100; // Đã về đích (Home)
 
   const startPos = START_POSITIONS[color];
-  if (stepCount <= 51) {
+  if (stepCount <= 52) {
     // Trên vòng chạy chung 52 ô (0 -> 51)
     return (startPos + stepCount - 1) % 52;
   } else {
-    // Trên đường lên chuồng riêng (52 -> 57)
+    // Trên đường lên chuồng riêng (53 -> 57)
     // Trả về một mã định danh duy nhất cho ô chuồng, ví dụ: "red-home-0", "green-home-3"
-    return `${color}-home-${stepCount - 52}`;
+    return `${color}-home-${stepCount - 53}`;
   }
 }
 
@@ -168,7 +168,7 @@ export function initializeGameState(playersInput, mode = 'classic') {
     winner: null, // Đội thắng hoặc Player thắng
     history: [],
     lastActionTime: Date.now(),
-    timerEndAt: Date.now() + 30000 // Hạn chót đổ xúc xắc (30s)
+    timerEndAt: Date.now() + 20000 // Hạn chót đổ xúc xắc (20s)
   };
 }
 
@@ -399,14 +399,14 @@ export function switchToNextTurn(gameState) {
   newState.hasMoved = false;
   newState.bonusRoll = false;
   newState.lastActionTime = Date.now();
-  newState.timerEndAt = Date.now() + 30000; // Hạn chót đổ xúc xắc (30s)
+  newState.timerEndAt = Date.now() + 20000; // Hạn chót đổ xúc xắc (20s)
 
   return newState;
 }
 
 // Bot AI đơn giản tự động đưa ra quyết định nước đi tốt nhất
 export function makeBotDecision(color, diceValue, pieces, mode) {
-  const validPieces = getValidPiecesToMove(color, diceValue, pieces);
+  const validPieces = getValidPiecesToMove(color, diceValue, pieces, mode);
   if (validPieces.length === 0) return null;
 
   // Điểm số ưu tiên của nước đi:

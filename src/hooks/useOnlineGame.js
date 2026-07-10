@@ -8,7 +8,7 @@ import {
 } from '../utils/audioEffects';
 import { getValidPiecesToMove } from '../utils/gameEngine';
 
-const SOCKET_URL = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '/';
+const SOCKET_URL = window.location.hostname === 'localhost' ? 'http://localhost:4444' : '/';
 
 // Hàm phát âm thanh khi di chuyển quân cờ dựa trên sự thay đổi trạng thái quân cờ
 const playAudioForPiecesTransition = (piecesBefore, piecesAfter) => {
@@ -63,13 +63,13 @@ export default function useOnlineGame(playerName, setGameMode) {
 
     // 1. Nhận phòng được tạo
     newSocket.on('room_created', ({ roomId, players }) => {
-      setRoomInfo({ roomId, creatorId: newSocket.id, players, status: 'waiting', mode: 'classic' });
+      setRoomInfo({ roomId, creatorId: newSocket.id, players, status: 'waiting', mode: '1vs1' });
       setGameMode('online');
     });
 
     // 2. Nhận phòng gia nhập thành công
     newSocket.on('room_joined', ({ roomId, players }) => {
-      setRoomInfo({ roomId, creatorId: '', players, status: 'waiting', mode: 'classic' });
+      setRoomInfo({ roomId, creatorId: '', players, status: 'waiting', mode: '1vs1' });
       setGameMode('online');
     });
 
@@ -85,6 +85,7 @@ export default function useOnlineGame(playerName, setGameMode) {
 
     // 5. Game online bắt đầu
     newSocket.on('game_started', (initialState) => {
+      initialState.lastLocalUpdate = Date.now();
       setGameState(initialState);
       setRoomInfo(prev => prev ? { ...prev, status: 'playing' } : null);
       setChatMessages([]);
@@ -92,22 +93,39 @@ export default function useOnlineGame(playerName, setGameMode) {
 
     // 6. Nhận cập nhật trạng thái bàn cờ từ server
     newSocket.on('game_state_updated', (updatedState) => {
-      // Chạy animation xúc xắc nếu xúc xắc vừa được đổ
       const oldState = gameStateRef.current;
       const isNewRoll = updatedState.hasRolled && (!oldState || !oldState.hasRolled);
       
+      // Khắc phục lệch múi giờ (Clock Skew) giữa client và server
+      if (oldState) {
+        if (updatedState.currentTurnColor !== oldState.currentTurnColor) {
+          // Bắt đầu lượt mới -> 20s đổ xúc xắc
+          updatedState.timerEndAt = Date.now() + 20000;
+        } else if (updatedState.hasRolled && !oldState.hasRolled) {
+          // Vừa đổ xúc xắc xong -> 30s đi quân
+          updatedState.timerEndAt = Date.now() + 30000;
+        } else {
+          // Giữ nguyên khoảng thời gian đếm ngược tương đối
+          const elapsed = Date.now() - oldState.lastLocalUpdate;
+          updatedState.timerEndAt = oldState.timerEndAt - elapsed;
+        }
+      } else {
+        // Lần đầu tiên nhận state, ước lượng theo thời gian còn lại từ server
+        // Nếu server truyền timerEndAt, tính khoảng lệch thời gian còn lại
+        const serverTimeLeft = updatedState.timerEndAt - Date.now();
+        updatedState.timerEndAt = Date.now() + (serverTimeLeft > 0 ? serverTimeLeft : 20000);
+      }
+      
+      updatedState.lastLocalUpdate = Date.now();
+
       if (isNewRoll) {
         setIsRolling(true);
         playRollSound(); // Phát âm thanh lắc xúc xắc
+        setGameState(updatedState); // Cập nhật state ngay lập tức để progress bar reset mượt mà
         setTimeout(() => {
           setIsRolling(false);
-          setGameState(updatedState);
         }, 1000);
       } else {
-        // Đồng bộ âm thanh di chuyển, đá quân, về chuồng cho Online
-        if (oldState && oldState.pieces && updatedState.pieces) {
-          playAudioForPiecesTransition(oldState.pieces, updatedState.pieces);
-        }
         setGameState(updatedState);
       }
     });
@@ -115,6 +133,12 @@ export default function useOnlineGame(playerName, setGameMode) {
     // 7. Nhận tin nhắn chat online
     newSocket.on('receive_chat', (messageObj) => {
       setChatMessages(prev => [...prev, messageObj]);
+    });
+
+    // 7.2. Bị chủ phòng kích
+    newSocket.on('kicked_from_room', () => {
+      alert('Bạn đã bị chủ phòng kích khỏi phòng chờ!');
+      window.location.reload();
     });
 
     setSocket(newSocket);
@@ -125,9 +149,23 @@ export default function useOnlineGame(playerName, setGameMode) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 7.1. Tự động gia nhập phòng qua link chia sẻ
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room');
+    if (roomParam && socket && isConnected && playerName) {
+      console.log(`Auto-joining room from link: ${roomParam}`);
+      socket.emit('join_room', { roomId: roomParam, playerName });
+      
+      // Xóa tham số room khỏi URL để tránh auto-join lại khi F5
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [socket, isConnected, playerName]);
+
   const handleCreateOnlineRoom = () => {
     if (socket) {
-      socket.emit('create_room', { playerName: playerName || 'Chủ phòng' });
+      socket.emit('create_room', { playerName: playerName || 'Người chơi 1' });
     }
   };
 
@@ -158,6 +196,24 @@ export default function useOnlineGame(playerName, setGameMode) {
   const handleStartOnlineGame = (includeBots = true) => {
     if (socket && roomInfo) {
       socket.emit('start_game', { roomId: roomInfo.roomId, includeBots });
+    }
+  };
+
+  const handleAddBotOnline = (color = null) => {
+    if (socket && roomInfo) {
+      socket.emit('add_bot', { roomId: roomInfo.roomId, color });
+    }
+  };
+
+  const handleRemoveBotOnline = (botId) => {
+    if (socket && roomInfo) {
+      socket.emit('remove_bot', { roomId: roomInfo.roomId, botId });
+    }
+  };
+
+  const handleKickPlayerOnline = (playerId) => {
+    if (socket && roomInfo) {
+      socket.emit('kick_player', { roomId: roomInfo.roomId, playerId });
     }
   };
 
@@ -230,6 +286,9 @@ export default function useOnlineGame(playerName, setGameMode) {
     handleToggleReadyOnline,
     handleChangeModeOnline,
     handleStartOnlineGame,
+    handleAddBotOnline,
+    handleRemoveBotOnline,
+    handleKickPlayerOnline,
     handleRollOnlineDice,
     handleMoveOnlinePiece,
     handleSendChatMessage,

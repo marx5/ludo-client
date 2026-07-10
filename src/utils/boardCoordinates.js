@@ -150,3 +150,26 @@ export function getPieceGridCoords(color, pieceId, position, stepCount) {
   const index = stepCount - 52;
   return HOME_STRETCH_COORDS[color][index];
 }
+
+const GRID_SIZE = 15;
+export const START_POSITIONS = { red: 0, green: 13, yellow: 26, blue: 39 };
+
+export function cellPercentCoords(row, col) {
+  const cell = 100 / GRID_SIZE;
+  return { left: (col + 0.5) * cell, top: (row + 0.5) * cell };
+}
+
+export function pieceGridAtStep(color, pieceId, stepCount) {
+  if (stepCount <= 0) return YARD_COORDS[color][pieceId];
+  if (stepCount === 58) return HOME_COORDS[color];
+  if (stepCount <= 51) {
+    const pos = (START_POSITIONS[color] + stepCount - 1) % 52;
+    return COMMON_TRACK_COORDS[pos];
+  }
+  return HOME_STRETCH_COORDS[color][stepCount - 52];
+}
+
+export function piecePercentAtStep(color, pieceId, stepCount) {
+  const g = pieceGridAtStep(color, pieceId, stepCount);
+  return cellPercentCoords(g.row, g.col);
+}

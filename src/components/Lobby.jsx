@@ -17,6 +17,9 @@ export default function Lobby({
   onToggleReady,
   onStartOnlineGame,
   onChangeMode,
+  onAddBot,
+  onRemoveBot,
+  onKickPlayer,
   chatMessages,
   onSendChatMessage
 }) {
@@ -36,6 +39,9 @@ export default function Lobby({
           onSelectColor={onSelectColor}
           onToggleReady={onToggleReady}
           onStartOnlineGame={onStartOnlineGame}
+          onAddBot={onAddBot}
+          onRemoveBot={onRemoveBot}
+          onKickPlayer={onKickPlayer}
           chatMessages={chatMessages}
           onSendChatMessage={onSendChatMessage}
         />

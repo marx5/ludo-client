@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import './RealtimeChat.css';
 
 export default function RealtimeChat({
@@ -52,17 +54,23 @@ export default function RealtimeChat({
       </div>
       
       <form onSubmit={handleSubmit} className="chat-input-container">
-        <input 
+        <Input 
           type="text" 
-          className={`glass-input flex-grow ${isXs ? 'py-2 text-xs' : 'py-2 text-sm'}`}
+          className={`flex-grow h-auto ${isXs ? 'py-2 px-3 text-xs rounded-lg' : 'py-2 px-3 text-sm rounded-xl'}`}
           placeholder={placeholder}
           value={chatInput}
           onChange={(e) => setChatInput(e.target.value)}
           maxLength={50}
         />
-        <button type="submit" className="glass-button p-2" disabled={!chatInput.trim()}>
+        <Button 
+          type="submit" 
+          size="icon"
+          variant="outline"
+          disabled={!chatInput.trim()}
+          className={`${isXs ? 'size-8 rounded-lg' : 'size-10 rounded-xl'}`}
+        >
           <Send size={isXs ? 14 : 16} />
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import './Header.css';
 
 export default function Header({ gameMode, isConnected, gameState, onQuitGame }) {
@@ -7,7 +8,7 @@ export default function Header({ gameMode, isConnected, gameState, onQuitGame })
     <header className="game-header glass-panel rounded-none border-t-0 border-x-0">
       <div className="flex items-center gap-2">
         <Sparkles className="text-yellow-400" size={20} />
-        <span className="game-title-logo">Ludo World</span>
+        <span className="game-title-logo">Ludo Z</span>
       </div>
       
       <div className="flex items-center gap-4">
@@ -26,13 +27,14 @@ export default function Header({ gameMode, isConnected, gameState, onQuitGame })
         )}
         
         {gameState && (
-          <button 
-            className="glass-button py-1.5 px-3 text-xs bg-red-500/10 hover:bg-red-500/25 border-red-500/20 text-red-300" 
+          <Button 
+            variant="destructive"
+            size="sm"
             onClick={onQuitGame}
           >
-            <LogOut size={12} />
+            <LogOut size={12} className="mr-1" />
             Thoát game
-          </button>
+          </Button>
         )}
       </div>
     </header>
