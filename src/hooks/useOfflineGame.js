@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { unstable_batchedUpdates } from 'react-dom';
 import {
   initializeGameState,
   movePieceInState,
@@ -63,30 +64,37 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
     const activeState = gameStateRef.current;
     if (!activeState || activeState.status !== 'playing' || activeState.currentTurnColor !== currentTurnColor) return;
 
+    // Sinh xúc xắc ngay lập tức cho Bot và cập nhật diceValue
+    const { value: diceVal, pityActivated } = rollDiceForPlayer(currentPlayer, activeState.pieces);
+    const rolledState = { ...activeState };
+    rolledState.diceValue = diceVal;
+    rolledState.hasRolled = false;
+    setGameState(rolledState);
+
     setIsRolling(true);
     playRollSound();
 
     await delay(BOT_ROLL_ANIMATION_MS);
-    setIsRolling(false);
 
-    const rolledState = { ...gameStateRef.current };
-    const { value: diceVal, pityActivated } = rollDiceForPlayer(currentPlayer, rolledState.pieces);
-    
-    rolledState.diceValue = diceVal;
-    rolledState.hasRolled = true;
-    rolledState.history.unshift({
+    // Hoàn tất lượt quay xúc xắc cho Bot
+    const afterRollState = { ...gameStateRef.current };
+    afterRollState.hasRolled = true;
+    afterRollState.history.unshift({
       time: new Date().toLocaleTimeString(),
       message: `Bot ${currentPlayer.name} (${currentTurnColor}) đã đổ được ${diceVal} điểm.`
     });
 
     if (pityActivated) {
-      rolledState.history.unshift({
+      afterRollState.history.unshift({
         time: new Date().toLocaleTimeString(),
         message: `[Hệ thống] Hỗ trợ may mắn: Cưỡng bức xúc xắc ra 6 điểm cho Bot ${currentPlayer.name}!`
       });
     }
 
-    setGameState(rolledState);
+    unstable_batchedUpdates(() => {
+      setIsRolling(false);
+      setGameState(afterRollState);
+    });
 
     // Bước 2: Suy nghĩ đi cờ
     await delay(BOT_THINK_BEFORE_MOVE_MS);
@@ -136,48 +144,59 @@ export default function useOfflineGame(playerName, setGameMode, setRoomInfo) {
     const state = gameStateRef.current;
     if (!state || state.hasRolled || isRolling) return;
 
+    // Sinh xúc xắc ngay lập tức cho người chơi và cập nhật diceValue
+    const currentPlayer = state.players.find(p => p.color === state.currentTurnColor);
+    const { value: diceVal, pityActivated } = rollDiceForPlayer(currentPlayer, state.pieces);
+    const nextState = { ...state };
+    nextState.diceValue = diceVal;
+    nextState.hasRolled = false;
+    setGameState(nextState);
+
     setIsRolling(true);
     playRollSound();
     
     await delay(1000); // 1s animation
-    setIsRolling(false);
     
-    const nextState = { ...gameStateRef.current };
-    const currentPlayer = nextState.players.find(p => p.color === nextState.currentTurnColor);
-    const { value: diceVal, pityActivated } = rollDiceForPlayer(currentPlayer, nextState.pieces);
-    
-    nextState.diceValue = diceVal;
-    nextState.hasRolled = true;
-    nextState.lastActionTime = Date.now();
-    nextState.timerEndAt = Date.now() + MOVE_TIMEOUT_MS;
+    // Hoàn tất lượt quay xúc xắc cho người chơi
+    const activeState = { ...gameStateRef.current };
+    activeState.hasRolled = true;
+    activeState.lastActionTime = Date.now();
+    activeState.timerEndAt = Date.now() + MOVE_TIMEOUT_MS;
 
     if (pityActivated) {
-      nextState.history.unshift({
+      activeState.history.unshift({
         time: new Date().toLocaleTimeString(),
         message: `[Hệ thống] Hỗ trợ may mắn: Cưỡng bức xúc xắc ra 6 điểm cho ${currentPlayer.name}!`
       });
     }
 
-    nextState.history.unshift({
+    activeState.history.unshift({
       time: new Date().toLocaleTimeString(),
-      message: `${currentPlayer.name} (${nextState.currentTurnColor}) đã đổ được ${diceVal} điểm.`
+      message: `${currentPlayer.name} (${activeState.currentTurnColor}) đã đổ được ${diceVal} điểm.`
     });
 
-    const validPieces = getValidPiecesToMove(nextState.currentTurnColor, diceVal, nextState.pieces, nextState.mode);
+    const validPieces = getValidPiecesToMove(activeState.currentTurnColor, diceVal, activeState.pieces, activeState.mode);
     
     if (validPieces.length === 0) {
-      nextState.history.unshift({
+      activeState.history.unshift({
         time: new Date().toLocaleTimeString(),
         message: `${currentPlayer.name} không có nước đi hợp lệ.`
       });
-      setGameState(nextState);
+      
+      unstable_batchedUpdates(() => {
+        setIsRolling(false);
+        setGameState(activeState);
+      });
 
       await delay(TURN_SWITCH_DELAY_MS);
       
       const stateAfterSkip = switchToNextTurn(gameStateRef.current);
       setGameState(stateAfterSkip);
     } else {
-      setGameState(nextState);
+      unstable_batchedUpdates(() => {
+        setIsRolling(false);
+        setGameState(activeState);
+      });
     }
   };
 

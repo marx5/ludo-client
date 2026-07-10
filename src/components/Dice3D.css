@@ -38,7 +38,6 @@
   height: 100%;
   position: absolute;
   transform-style: preserve-3d;
-  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.3, 1.1);
 }
 
 .cube-face {
@@ -111,14 +110,37 @@
 .show-5 { transform: rotateX(-90deg) rotateY(0deg); }
 .show-6 { transform: rotateX(90deg) rotateY(0deg); }
 
-/* Animation lắc xúc xắc khi đang roll */
-.rolling {
-  animation: spin-animation 1.0s ease-out infinite;
-}
+/* Hoạt cảnh xoay xúc xắc riêng cho từng mặt kết quả */
+.rolling.roll-to-1 { animation: roll-to-1-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+.rolling.roll-to-2 { animation: roll-to-2-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+.rolling.roll-to-3 { animation: roll-to-3-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+.rolling.roll-to-4 { animation: roll-to-4-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+.rolling.roll-to-5 { animation: roll-to-5-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+.rolling.roll-to-6 { animation: roll-to-6-anim 1.0s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
 
-@keyframes spin-animation {
+@keyframes roll-to-1-anim {
   0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-  100% { transform: rotateX(360deg) rotateY(720deg) rotateZ(180deg); }
+  100% { transform: rotateX(360deg) rotateY(720deg) rotateZ(0deg); }
+}
+@keyframes roll-to-2-anim {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(360deg) rotateY(540deg) rotateZ(0deg); }
+}
+@keyframes roll-to-3-anim {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(360deg) rotateY(630deg) rotateZ(0deg); }
+}
+@keyframes roll-to-4-anim {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(360deg) rotateY(810deg) rotateZ(0deg); }
+}
+@keyframes roll-to-5-anim {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(270deg) rotateY(720deg) rotateZ(0deg); }
+}
+@keyframes roll-to-6-anim {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(450deg) rotateY(720deg) rotateZ(0deg); }
 }
 
 /* ==========================================

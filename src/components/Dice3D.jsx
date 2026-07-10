@@ -4,7 +4,9 @@ import './Dice3D.css';
 export default function Dice3D({ value, isRolling, onRoll, disabled }) {
   // Trả về class tương ứng để hiển thị đúng mặt xúc xắc 3D
   const getShowClass = () => {
-    if (isRolling) return 'rolling';
+    if (isRolling) {
+      return `rolling roll-to-${value || 1}`;
+    }
     switch (value) {
       case 1: return 'show-1';
       case 2: return 'show-2';
