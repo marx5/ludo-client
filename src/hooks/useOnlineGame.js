@@ -1,38 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import {
-  playRollSound,
-  playMoveSound,
-  playHitSound,
-  playWinSound
+  playRollSound
 } from '../utils/audioEffects';
 import { getValidPiecesToMove } from '../utils/gameEngine';
 
 const SOCKET_URL = window.location.hostname === 'localhost' ? 'http://localhost:4444' : '/';
 
-// Hàm phát âm thanh khi di chuyển quân cờ dựa trên sự thay đổi trạng thái quân cờ
-const playAudioForPiecesTransition = (piecesBefore, piecesAfter) => {
-  if (!piecesBefore || !piecesAfter) return;
-  // 1. Kiểm tra xem có quân nào về đích không (đạt stepCount 58)
-  const win = piecesAfter.some((p, idx) => p.stepCount === 58 && (!piecesBefore[idx] || piecesBefore[idx].stepCount !== 58));
-  if (win) {
-    playWinSound();
-    return;
-  }
-  // 2. Kiểm tra xem có quân nào bị đá không (quay về position -1)
-  const hit = piecesAfter.some((p, idx) => p.position === -1 && (!piecesBefore[idx] || piecesBefore[idx].position !== -1));
-  if (hit) {
-    playHitSound();
-    return;
-  }
-  // 3. Kiểm tra xem có bất kỳ quân nào di chuyển không
-  const moved = piecesAfter.some((p, idx) => !piecesBefore[idx] || p.position !== piecesBefore[idx].position || p.stepCount !== piecesBefore[idx].stepCount);
-  if (moved) {
-    playMoveSound();
-  }
-};
-
-export default function useOnlineGame(playerName, setGameMode) {
+export default function useOnlineGame(playerName, setGameMode, showModal) {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [roomInfo, setRoomInfo] = useState(null);
@@ -44,11 +19,26 @@ export default function useOnlineGame(playerName, setGameMode) {
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
+  const sessionIdRef = useRef(null);
+  if (!sessionIdRef.current) {
+    let sid = localStorage.getItem('ludo_session_id');
+    if (!sid) {
+      sid = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      localStorage.setItem('ludo_session_id', sid);
+    }
+    sessionIdRef.current = sid;
+  }
+  const sessionId = sessionIdRef.current;
+
   useEffect(() => {
     const newSocket = io(SOCKET_URL, {
       autoConnect: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 2000
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      query: {
+        sessionId,
+        playerName: playerName || ''
+      }
     });
 
     newSocket.on('connect', () => {
@@ -85,9 +75,42 @@ export default function useOnlineGame(playerName, setGameMode) {
 
     // 5. Game online bắt đầu
     newSocket.on('game_started', (initialState) => {
+      if (initialState.serverTime) {
+        const timeDiff = Date.now() - initialState.serverTime;
+        initialState.timerEndAt = initialState.timerEndAt + timeDiff;
+      }
       initialState.lastLocalUpdate = Date.now();
-      setGameState(initialState);
-      setRoomInfo(prev => prev ? { ...prev, status: 'playing' } : null);
+
+      const applyGameStates = () => {
+        setGameState(initialState);
+        setRoomInfo({
+          roomId: initialState.roomId,
+          creatorId: initialState.players[0]?.id || '',
+          players: initialState.players,
+          status: 'playing',
+          mode: initialState.mode
+        });
+        setGameMode('online');
+        sessionStorage.setItem('ludo_in_game', 'true');
+      };
+
+      const isInGameSession = sessionStorage.getItem('ludo_in_game') === 'true';
+      if (isInGameSession) {
+        applyGameStates();
+      } else {
+        showModal({
+          title: 'Khôi phục trận đấu',
+          message: 'Bạn có một trận đấu đang diễn ra. Bạn có muốn quay lại chơi tiếp không?',
+          isConfirm: true,
+          onConfirm: () => {
+            applyGameStates();
+          },
+          onCancel: () => {
+            newSocket.emit('forfeit_rejoin');
+            sessionStorage.removeItem('ludo_in_game');
+          }
+        });
+      }
       setChatMessages([]);
     });
 
@@ -96,24 +119,10 @@ export default function useOnlineGame(playerName, setGameMode) {
       const oldState = gameStateRef.current;
       const isNewRoll = updatedState.hasRolled && (!oldState || !oldState.hasRolled);
       
-      // Khắc phục lệch múi giờ (Clock Skew) giữa client và server
-      if (oldState) {
-        if (updatedState.currentTurnColor !== oldState.currentTurnColor) {
-          // Bắt đầu lượt mới -> 20s đổ xúc xắc
-          updatedState.timerEndAt = Date.now() + 20000;
-        } else if (updatedState.hasRolled && !oldState.hasRolled) {
-          // Vừa đổ xúc xắc xong -> 30s đi quân
-          updatedState.timerEndAt = Date.now() + 30000;
-        } else {
-          // Giữ nguyên khoảng thời gian đếm ngược tương đối
-          const elapsed = Date.now() - oldState.lastLocalUpdate;
-          updatedState.timerEndAt = oldState.timerEndAt - elapsed;
-        }
-      } else {
-        // Lần đầu tiên nhận state, ước lượng theo thời gian còn lại từ server
-        // Nếu server truyền timerEndAt, tính khoảng lệch thời gian còn lại
-        const serverTimeLeft = updatedState.timerEndAt - Date.now();
-        updatedState.timerEndAt = Date.now() + (serverTimeLeft > 0 ? serverTimeLeft : 20000);
+      // Khắc phục lệch múi giờ (Clock Skew) bằng serverTime
+      if (updatedState.serverTime) {
+        const timeDiff = Date.now() - updatedState.serverTime;
+        updatedState.timerEndAt = updatedState.timerEndAt + timeDiff;
       }
       
       updatedState.lastLocalUpdate = Date.now();
@@ -128,6 +137,11 @@ export default function useOnlineGame(playerName, setGameMode) {
       } else {
         setGameState(updatedState);
       }
+
+      // Nếu trận đấu đã kết thúc, xóa trạng thái lưu sessionStorage
+      if (updatedState.status === 'finished') {
+        sessionStorage.removeItem('ludo_in_game');
+      }
     });
 
     // 7. Nhận tin nhắn chat online
@@ -137,8 +151,11 @@ export default function useOnlineGame(playerName, setGameMode) {
 
     // 7.2. Bị chủ phòng kích
     newSocket.on('kicked_from_room', () => {
-      alert('Bạn đã bị chủ phòng kích khỏi phòng chờ!');
-      window.location.reload();
+      showModal({
+        title: 'Bị kích khỏi phòng',
+        message: 'Bạn đã bị chủ phòng kích khỏi phòng chờ!',
+        onConfirm: () => window.location.reload()
+      });
     });
 
     setSocket(newSocket);
@@ -236,9 +253,41 @@ export default function useOnlineGame(playerName, setGameMode) {
   };
 
   const handleQuitGame = () => {
-    if (window.confirm('Bạn có chắc muốn thoát trận đấu và quay lại sảnh chính?')) {
-      window.location.reload();
-    }
+    showModal({
+      title: 'Thoát trận đấu',
+      message: 'Bạn có chắc muốn thoát trận đấu và quay lại sảnh chính?',
+      isConfirm: true,
+      onConfirm: () => {
+        sessionStorage.removeItem('ludo_in_game');
+        window.location.reload();
+      }
+    });
+  };
+
+  const handleKickPlayerWithConfirm = (playerId, name, isBot) => {
+    showModal({
+      title: 'Xác nhận kích',
+      message: `Bạn có chắc chắn muốn kích ${isBot ? 'Máy' : name} ra khỏi phòng chơi?`,
+      isConfirm: true,
+      onConfirm: () => {
+        if (isBot) {
+          handleRemoveBotOnline(playerId);
+        } else {
+          handleKickPlayerOnline(playerId);
+        }
+      }
+    });
+  };
+
+  const handleLeaveRoomWithConfirm = () => {
+    showModal({
+      title: 'Rời phòng chờ',
+      message: 'Bạn có chắc chắn muốn rời khỏi phòng chờ và quay lại sảnh chính?',
+      isConfirm: true,
+      onConfirm: () => {
+        window.location.reload();
+      }
+    });
   };
 
   // 8. Tự động đi cờ trực tuyến khi chỉ có một nước đi hợp lý/độc nhất
@@ -292,6 +341,8 @@ export default function useOnlineGame(playerName, setGameMode) {
     handleRollOnlineDice,
     handleMoveOnlinePiece,
     handleSendChatMessage,
-    handleQuitGame
+    handleQuitGame,
+    handleKickPlayerWithConfirm,
+    handleLeaveRoomWithConfirm
   };
 }

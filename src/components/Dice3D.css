@@ -12,6 +12,12 @@
   animation: dice-pulse-glow 1.5s infinite ease-in-out;
 }
 
+/* Hiệu ứng xúc xắc khi bị vô hiệu hóa mà không làm trong suốt */
+.dice-container.disabled .cube-face {
+  filter: brightness(0.92) contrast(0.95);
+  border-color: #cbd5e1;
+}
+
 @keyframes dice-pulse-glow {
   0% {
     transform: scale(1);

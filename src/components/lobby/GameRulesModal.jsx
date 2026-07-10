@@ -5,32 +5,32 @@ import { X, Trophy, Dices, Shield, Swords } from 'lucide-react';
 export default function GameRulesModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="glass-panel w-full max-w-2xl max-h-[85vh] flex flex-col p-6 text-left relative overflow-hidden shadow-2xl border border-white/10 rounded-2xl bg-gray-950/80">
+      <div className="w-full max-w-2xl max-h-[85vh] flex flex-col p-6 text-left relative overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-gray-900">
         
         {/* Nút Đóng */}
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-4 right-4 text-gray-400 hover:text-white" 
+          className="absolute top-4 right-4 text-slate-400 dark:text-gray-400 hover:text-slate-600 dark:hover:text-white" 
           onClick={onClose}
         >
           <X size={20} />
         </Button>
 
         {/* Tiêu đề */}
-        <div className="border-b border-white/5 pb-4 mb-4">
-          <h2 className="text-2xl font-black text-yellow-400 flex items-center gap-2">
-            <Trophy className="text-yellow-400" />
+        <div className="border-b border-slate-200 dark:border-white/5 pb-4 mb-4">
+          <h2 className="text-2xl font-black text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+            <Trophy className="text-yellow-600 dark:text-yellow-400" />
             Luật Chơi Ludo Z
           </h2>
         </div>
 
         {/* Nội dung cuộn */}
-        <div className="overflow-y-auto pr-2 space-y-4 text-gray-300 text-sm leading-relaxed scrollbar-thin">
+        <div className="overflow-y-auto pr-2 space-y-4 text-slate-700 dark:text-gray-300 text-sm leading-relaxed scrollbar-thin">
           
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-1.5 mb-1.5">
-              <Dices size={16} className="text-blue-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-1.5">
+              <Dices size={16} className="text-blue-600 dark:text-blue-400" />
               1. Đổ Xúc Xắc & Ra Quân
             </h3>
             <ul className="list-disc pl-5 space-y-1">
@@ -41,8 +41,8 @@ export default function GameRulesModal({ onClose }) {
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-1.5 mb-1.5">
-              <Swords size={16} className="text-red-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-1.5">
+              <Swords size={16} className="text-red-600 dark:text-red-400" />
               2. Đi Quân & Đá Cờ
             </h3>
             <ul className="list-disc pl-5 space-y-1">
@@ -54,8 +54,8 @@ export default function GameRulesModal({ onClose }) {
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-1.5 mb-1.5">
-              <Shield size={16} className="text-green-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-1.5">
+              <Shield size={16} className="text-green-600 dark:text-green-400" />
               3. Vị Trí An Toàn (Safe Zones)
             </h3>
             <ul className="list-disc pl-5 space-y-1">
@@ -65,8 +65,8 @@ export default function GameRulesModal({ onClose }) {
           </div>
 
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-1.5 mb-1.5">
-              <Trophy size={16} className="text-yellow-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-1.5">
+              <Trophy size={16} className="text-yellow-600 dark:text-yellow-400" />
               4. Về Đích & Chiến Thắng
             </h3>
             <ul className="list-disc pl-5 space-y-1">
@@ -80,8 +80,8 @@ export default function GameRulesModal({ onClose }) {
         </div>
 
         {/* Nút đóng ở chân */}
-        <div className="border-t border-white/5 pt-4 mt-4 text-right">
-          <Button onClick={onClose} className="bg-yellow-500/40 hover:bg-yellow-500/60 text-yellow-100 font-bold border-yellow-500/50">
+        <div className="border-t border-slate-200 dark:border-white/5 pt-4 mt-4 text-right">
+          <Button onClick={onClose} className="bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-500/40 dark:hover:bg-yellow-500/60 text-yellow-950 dark:text-yellow-100 font-bold border-yellow-500/50">
             Đã Hiểu
           </Button>
         </div>

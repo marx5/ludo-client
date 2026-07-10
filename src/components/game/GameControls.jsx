@@ -14,7 +14,7 @@ export default function GameControls({
   const { status } = gameState;
 
   return (
-    <div className="glass-panel controls-panel flex-grow">
+    <div className="controls-panel flex-grow">
       {status === 'playing' ? (
         <>
           <Dice3D

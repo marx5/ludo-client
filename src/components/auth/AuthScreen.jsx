@@ -31,13 +31,13 @@ export default function AuthScreen({ onLogin, onGuest }) {
         {mode === 'menu' && (
           <div className="auth-buttons flex flex-col items-center gap-4 mt-6">
             <Button 
-              className="w-full sm:w-64 py-6 text-base bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)]"
+              className="w-full sm:w-64 h-auto py-6 text-base bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)]"
               onClick={() => setMode('login')}
             >
               Đăng Nhập
             </Button>
             <Button 
-              className="w-full sm:w-64 py-6 text-base bg-yellow-500/40 hover:bg-yellow-500/60 text-yellow-100 font-bold border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.3)]"
+              className="w-full sm:w-64 h-auto py-6 text-base bg-yellow-500/40 hover:bg-yellow-500/60 text-yellow-100 font-bold border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.3)]"
               onClick={() => setMode('guest')}
             >
               Chơi ngay
@@ -71,14 +71,14 @@ export default function AuthScreen({ onLogin, onGuest }) {
               <Button 
                 type="button" 
                 variant="outline"
-                className="w-full"
+                className="w-full h-11 border-slate-300 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 font-semibold"
                 onClick={() => setMode('menu')}
               >
                 Quay Lại
               </Button>
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)]"
+                className="w-full h-11 bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)] font-bold"
               >
                 Vào Game
               </Button>
@@ -104,14 +104,14 @@ export default function AuthScreen({ onLogin, onGuest }) {
               <Button 
                 type="button" 
                 variant="outline"
-                className="w-full"
+                className="w-full h-11 border-slate-300 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 font-semibold"
                 onClick={() => setMode('menu')}
               >
                 Quay Lại
               </Button>
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)]"
+                className="w-full h-11 bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)] font-bold"
               >
                 Vào Game
               </Button>

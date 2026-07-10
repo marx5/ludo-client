@@ -12,25 +12,12 @@ export default function Header({ gameMode, isConnected, gameState, onQuitGame })
       </div>
       
       <div className="flex items-center gap-4">
-        {gameMode === 'online' && (
-          <span className={`flex items-center gap-1.5 text-xs py-1 px-3 rounded-full border ${
-            isConnected 
-              ? 'text-green-400 bg-green-500/10 border-green-500/20' 
-              : 'text-red-400 bg-red-500/10 border-red-500/20'
-          }`}>
-            <span 
-              className={`rounded-full ${isConnected ? 'bg-green-500 animate-ping' : 'bg-red-500'}`} 
-              style={{ width: '8px', height: '8px' }}
-            ></span>
-            {isConnected ? 'Máy chủ: Đang kết nối' : 'Máy chủ: Mất kết nối'}
-          </span>
-        )}
-        
         {gameState && (
           <Button 
             variant="destructive"
             size="sm"
             onClick={onQuitGame}
+            className="bg-red-600 hover:bg-red-500 text-white dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/60 dark:border-red-900/50 font-bold"
           >
             <LogOut size={12} className="mr-1" />
             Thoát game

@@ -20,6 +20,7 @@ export default function Lobby({
   onAddBot,
   onRemoveBot,
   onKickPlayer,
+  onLeaveRoom,
   chatMessages,
   onSendChatMessage
 }) {
@@ -42,6 +43,7 @@ export default function Lobby({
           onAddBot={onAddBot}
           onRemoveBot={onRemoveBot}
           onKickPlayer={onKickPlayer}
+          onLeaveRoom={onLeaveRoom}
           chatMessages={chatMessages}
           onSendChatMessage={onSendChatMessage}
         />

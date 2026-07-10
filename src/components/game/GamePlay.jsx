@@ -108,8 +108,8 @@ export default function GamePlay({
 
   return (
     <div className="game-layout">
-      {/* Cột giữa: Bàn cờ Ludo bằng Phaser Canvas */}
-      <section className="main-board-panel flex flex-col items-center justify-center relative">
+      {/* Khu vực Bàn cờ & 4 thẻ người chơi góc */}
+      <section className="main-board-panel flex flex-col justify-center items-center w-full relative">
         <div className="flex justify-between w-full max-w-3xl mx-auto mb-1 px-2">
           {getPlayerByColor(topLeftColor) ? (
             <PlayerCard 
@@ -141,7 +141,7 @@ export default function GamePlay({
 
         <PhaserGame />
 
-        <div className="flex justify-between w-full max-w-3xl mx-auto mt-1 px-2">
+        <div className="flex justify-between items-center w-full max-w-3xl mx-auto mt-1 px-2 relative">
           {getPlayerByColor(bottomLeftColor) ? (
             <PlayerCard 
               color={bottomLeftColor} 
@@ -155,6 +155,17 @@ export default function GamePlay({
           ) : (
             <div className="w-36 invisible" />
           )}
+
+          {/* Xúc xắc chính ở giữa hai thẻ người chơi dưới */}
+          <div className={`flex justify-center items-center ${gameState?.currentTurnColor === myColor ? '' : 'invisible pointer-events-none'}`}>
+            <GameControls
+              gameState={gameState}
+              isRolling={isRolling}
+              canClientRollDice={canClientRollDice()}
+              onRollDice={isOnline ? online.handleRollOnlineDice : offline.handleRollOfflineDice}
+            />
+          </div>
+
           {getPlayerByColor(bottomRightColor) ? (
             <PlayerCard 
               color={bottomRightColor} 
@@ -188,15 +199,6 @@ export default function GamePlay({
 
       {/* Dưới bàn cờ: Xúc xắc + Chat (online) */}
       <section className="below-board-panel">
-        {/* Bảng xúc xắc (Dice controls) luôn giữ nguyên chiều cao để tránh làm lệch bàn cờ, ẩn đi khi không phải lượt của mình */}
-        <div className={gameState?.currentTurnColor === myColor ? '' : 'invisible pointer-events-none'}>
-          <GameControls
-            gameState={gameState}
-            isRolling={isRolling}
-            canClientRollDice={canClientRollDice()}
-            onRollDice={isOnline ? online.handleRollOnlineDice : offline.handleRollOfflineDice}
-          />
-        </div>
 
         {/* Chatbox dạng trượt mở rộng trên Mobile */}
         {isOnline && (
@@ -218,7 +220,7 @@ export default function GamePlay({
               TitleIcon={MessageSquare}
               placeholder="Nhập tin nhắn..."
               emptyText="Gửi tin nhắn để chat cùng mọi người!"
-              className={`below-board-chat mobile-sliding-chat ${isChatExpanded ? 'expanded' : 'collapsed'}`}
+              className={`below-board-chat mobile-sliding-chat glass-panel ${isChatExpanded ? 'expanded' : 'collapsed'}`}
               size="xs"
             />
           </>

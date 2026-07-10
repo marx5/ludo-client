@@ -5,11 +5,11 @@ import Dice3D from '../Dice3D';
 
 const getColorTheme = (color) => {
   switch (color) {
-    case 'red': return { bg: 'bg-red-900/40', border: 'border-red-500/50', stroke: '#ef4444', icon: 'text-red-500' };
-    case 'green': return { bg: 'bg-green-900/40', border: 'border-green-500/50', stroke: '#22c55e', icon: 'text-green-500' };
-    case 'yellow': return { bg: 'bg-yellow-900/40', border: 'border-yellow-500/50', stroke: '#eab308', icon: 'text-yellow-500' };
-    case 'blue': return { bg: 'bg-blue-900/40', border: 'border-blue-500/50', stroke: '#3b82f6', icon: 'text-blue-500' };
-    default: return { bg: 'bg-gray-900/40', border: 'border-gray-500/50', stroke: '#9ca3af', icon: 'text-gray-500' };
+    case 'red': return { bg: 'bg-red-500/10 dark:bg-red-900/40', border: 'border-red-500/30 dark:border-red-500/50', stroke: '#ef4444', icon: 'text-red-500' };
+    case 'green': return { bg: 'bg-green-500/10 dark:bg-green-900/40', border: 'border-green-500/30 dark:border-green-500/50', stroke: '#22c55e', icon: 'text-green-500' };
+    case 'yellow': return { bg: 'bg-yellow-500/10 dark:bg-yellow-900/40', border: 'border-yellow-500/30 dark:border-yellow-500/50', stroke: '#eab308', icon: 'text-yellow-500' };
+    case 'blue': return { bg: 'bg-blue-500/10 dark:bg-blue-900/40', border: 'border-blue-500/30 dark:border-blue-500/50', stroke: '#3b82f6', icon: 'text-blue-500' };
+    default: return { bg: 'bg-gray-100 dark:bg-gray-900/40', border: 'border-gray-300 dark:border-gray-500/50', stroke: '#9ca3af', icon: 'text-gray-500' };
   }
 };
 
@@ -116,12 +116,12 @@ export default function PlayerCard({ player, color, isTurn, gameState, position,
 
       {/* Info */}
       <div className={`flex flex-col flex-grow min-w-0 ${isRightSide ? 'items-end text-right' : 'items-start text-left'}`}>
-        <span className={`text-[10px] font-bold text-white truncate w-full ${isRightSide ? 'text-right' : 'text-left'}`} title={player?.name || 'Đang đợi...'}>
+        <span className={`text-[10px] font-bold text-slate-800 dark:text-white truncate w-full ${isRightSide ? 'text-right' : 'text-left'}`} title={player?.name || 'Đang đợi...'}>
           {player?.name || 'Trống'}
         </span>
         <div className={`flex items-center gap-1 mt-0.5 ${isRightSide ? 'flex-row-reverse' : 'flex-row'}`}>
           <div className={`w-2 h-2 rounded-full ${theme.icon.replace('text-', 'bg-')} border border-white/50 shadow-inner`}></div>
-          <span className="text-[9px] text-gray-300">{finishedPieces} / 4</span>
+          <span className="text-[9px] text-slate-500 dark:text-gray-300">{finishedPieces} / 4</span>
         </div>
       </div>
     </div>

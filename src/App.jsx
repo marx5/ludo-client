@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Lobby from './components/Lobby';
 import GamePlay from './components/game/GamePlay';
 import Header from './components/layout/Header';
 import ErrorModal from './components/game/ErrorModal';
+import CustomModal from './components/ui/CustomModal';
 import useApp from './hooks/useApp';
 import AuthScreen from './components/auth/AuthScreen';
 
@@ -19,10 +20,26 @@ export default function App() {
     getMovablePieceIds,
     canClientRollDice,
     getMyColor,
-    handleQuitGame
+    handleQuitGame,
+    modalConfig
   } = useApp();
 
   const [authMode, setAuthMode] = useState(() => localStorage.getItem('ludo_auth_mode') || null);
+
+  // Lắng nghe chế độ sáng/tối của hệ thống và áp dụng class .dark
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    handleChange(mediaQuery);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   const handleLogin = (username) => {
     setPlayerName(username);
@@ -73,7 +90,8 @@ export default function App() {
             onStartOnlineGame={online.handleStartOnlineGame}
             onAddBot={online.handleAddBotOnline}
             onRemoveBot={online.handleRemoveBotOnline}
-            onKickPlayer={online.handleKickPlayerOnline}
+            onKickPlayer={online.handleKickPlayerWithConfirm}
+            onLeaveRoom={online.handleLeaveRoomWithConfirm}
             onChangeMode={online.handleChangeModeOnline}
             chatMessages={online.chatMessages}
             onSendChatMessage={online.handleSendChatMessage}
@@ -99,6 +117,9 @@ export default function App() {
         errorMessage={isOnline ? online.errorMessage : ''} 
         onClose={() => online.setErrorMessage('')} 
       />
+
+      {/* Custom Alert/Confirm Modal */}
+      <CustomModal {...modalConfig} />
 
     </div>
   );

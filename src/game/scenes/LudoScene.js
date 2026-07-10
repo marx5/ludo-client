@@ -294,10 +294,19 @@ export class LudoScene extends Scene {
     }
     
     if (position === 999 || position === 100 || stepCount === 58) {
-      // WIN / Về đích -> xếp vào tâm bàn cờ
+      // Xếp cố định xung quanh tâm dựa trên màu và id để tránh dùng Math.random() gây rung lắc
+      let offsetX = 0;
+      let offsetY = 0;
+      if (color === 'red') { offsetX = -this.cellSize * 0.25; offsetY = -this.cellSize * 0.25; }
+      else if (color === 'green') { offsetX = this.cellSize * 0.25; offsetY = -this.cellSize * 0.25; }
+      else if (color === 'yellow') { offsetX = this.cellSize * 0.25; offsetY = this.cellSize * 0.25; }
+      else if (color === 'blue') { offsetX = -this.cellSize * 0.25; offsetY = this.cellSize * 0.25; }
+      
+      const idOffset = (id - 1.5) * (this.cellSize * 0.08);
+      
       return {
-        x: startX + 7.5 * this.cellSize + (Math.random() * 10 - 5),
-        y: startY + 7.5 * this.cellSize + (Math.random() * 10 - 5)
+        x: startX + 7.5 * this.cellSize + offsetX + idOffset,
+        y: startY + 7.5 * this.cellSize + offsetY + idOffset
       };
     }
 
@@ -484,6 +493,38 @@ export class LudoScene extends Scene {
       cellOccupants[key].push(p);
     });
 
+    // Lập bản đồ thông tin của các quân bị đá trước khi bất kỳ token.currentStepCount nào bị sửa đổi
+    const kickedPiecesInfo = {};
+    state.pieces.forEach(piece => {
+      const pieceKey = `${piece.color}-${piece.id}`;
+      const token = this.tokens[pieceKey];
+      if (token && piece.stepCount === 0 && token.currentStepCount > 0) {
+        const oldStepCount = token.currentStepCount;
+        const oldPosition = token.currentPosition;
+        
+        // Tìm kẻ tấn công trong state.pieces
+        const attacker = state.pieces.find(p => p.color !== piece.color && p.position === oldPosition && p.stepCount > 0);
+        let delay = 0;
+        
+        if (attacker) {
+          const attackerKey = `${attacker.color}-${attacker.id}`;
+          const attackerToken = this.tokens[attackerKey];
+          if (attackerToken) {
+            const stepsToTake = attacker.stepCount - attackerToken.currentStepCount;
+            if (stepsToTake > 0) {
+              delay = stepsToTake * 180;
+            }
+          }
+        }
+        
+        kickedPiecesInfo[pieceKey] = {
+          oldStepCount,
+          oldPosition,
+          delay
+        };
+      }
+    });
+
     state.pieces.forEach(piece => {
       const pieceKey = `${piece.color}-${piece.id}`;
       
@@ -524,24 +565,12 @@ export class LudoScene extends Scene {
         token.setRotation(-this.cameras.main.rotation);
 
         if (piece.stepCount === 0 && token.currentStepCount > 0) {
-            const oldStepCount = token.currentStepCount;
-            const oldPosition = token.currentPosition;
+            const info = kickedPiecesInfo[pieceKey];
+            const oldStepCount = info ? info.oldStepCount : token.currentStepCount;
+            const delay = info ? info.delay : 0;
+            
             token.currentStepCount = piece.stepCount;
             token.currentPosition = piece.position;
-            
-            // Tìm xem có quân cờ nào của đối thủ đang di chuyển tới vị trí cũ của quân này không
-            let delay = 0;
-            const attacker = state.pieces.find(p => p.color !== piece.color && p.position === oldPosition && p.stepCount > 0);
-            if (attacker) {
-              const attackerKey = `${attacker.color}-${attacker.id}`;
-              const attackerToken = this.tokens[attackerKey];
-              if (attackerToken) {
-                const stepsToTake = attacker.stepCount - attackerToken.currentStepCount;
-                if (stepsToTake > 0) {
-                  delay = stepsToTake * 180; // 180ms mỗi bước di chuyển tiến
-                }
-              }
-            }
 
             if (delay > 0) {
               this.time.delayedCall(delay, () => {

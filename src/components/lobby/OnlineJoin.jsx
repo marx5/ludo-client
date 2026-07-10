@@ -21,9 +21,15 @@ export default function OnlineJoin({ onGoBack, onJoinOnlineRoom }) {
         />
 
         <div className="grid grid-cols-2 gap-4 mt-8">
-          <Button variant="outline" onClick={onGoBack}>Quay lại</Button>
           <Button 
-            className="bg-blue-600/50 hover:bg-blue-600/70 border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)]" 
+            variant="outline" 
+            className="h-11 border-slate-300 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 font-semibold"
+            onClick={onGoBack}
+          >
+            Quay lại
+          </Button>
+          <Button 
+            className="h-11 bg-blue-600 hover:bg-blue-500 dark:bg-blue-600/50 dark:hover:bg-blue-600/70 text-white border-blue-500/50 shadow-[0_0_15px_rgba(30,144,255,0.3)] font-bold" 
             onClick={() => onJoinOnlineRoom(joinRoomId)}
             disabled={joinRoomId.length < 6}
           >

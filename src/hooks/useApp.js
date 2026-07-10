@@ -7,14 +7,41 @@ export default function useApp() {
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('ludo_player_name') || '');
   const [gameMode, setGameMode] = useState(null); // 'offline' | 'online'
 
+  // Quản lý Custom Modal State
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    isConfirm: false,
+    onConfirm: null,
+    onCancel: null
+  });
+
+  const showModal = (config) => {
+    setModalConfig({
+      isOpen: true,
+      title: config.title || 'Thông báo',
+      message: config.message || '',
+      isConfirm: !!config.isConfirm,
+      onConfirm: () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        if (config.onConfirm) config.onConfirm();
+      },
+      onCancel: () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        if (config.onCancel) config.onCancel();
+      }
+    });
+  };
+
   // Lưu tên vào localStorage khi thay đổi
   useEffect(() => {
     localStorage.setItem('ludo_player_name', playerName);
   }, [playerName]);
 
   // Khởi tạo các hooks game trực tuyến và ngoại tuyến
-  const online = useOnlineGame(playerName, setGameMode);
-  const offline = useOfflineGame(playerName, setGameMode, online.setRoomInfo);
+  const online = useOnlineGame(playerName, setGameMode, showModal);
+  const offline = useOfflineGame(playerName, setGameMode, online.setRoomInfo, showModal);
 
   const isOnline = gameMode === 'online';
   const activeGame = isOnline ? online : offline;
@@ -24,9 +51,14 @@ export default function useApp() {
 
   // Xử lý thoát game
   const handleQuitGame = () => {
-    if (window.confirm('Bạn có chắc muốn thoát trận đấu và quay lại sảnh chính?')) {
-      window.location.reload();
-    }
+    showModal({
+      title: 'Thoát trận đấu',
+      message: 'Bạn có chắc muốn thoát trận đấu và quay lại sảnh chính?',
+      isConfirm: true,
+      onConfirm: () => {
+        window.location.reload();
+      }
+    });
   };
 
   // Lấy các quân cờ hợp lệ có thể đi của người chơi hiện tại (chỉ dùng cho hiển thị gợi ý)
@@ -79,6 +111,8 @@ export default function useApp() {
     getMovablePieceIds,
     canClientRollDice,
     getMyColor,
-    handleQuitGame
+    handleQuitGame,
+    modalConfig,
+    showModal
   };
 }

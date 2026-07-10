@@ -30,9 +30,12 @@
 }
 
 .chat-message-sender.red { color: var(--color-red); }
-.chat-message-sender.green { color: var(--color-green); }
-.chat-message-sender.yellow { color: var(--color-yellow); }
+.chat-message-sender.green { color: #1e8449; }
+.chat-message-sender.yellow { color: #b7791f; }
 .chat-message-sender.blue { color: var(--color-blue); }
+
+.dark .chat-message-sender.green { color: var(--color-green); }
+.dark .chat-message-sender.yellow { color: var(--color-yellow); }
 
 .chat-input-container {
   padding: 10px;

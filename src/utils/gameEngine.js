@@ -62,37 +62,23 @@ export function canPieceMove(piece, diceValue, pieces, mode = 'classic') {
     return false;
   }
 
-  // Luật chặn đường: 1 quân không thể đá > 1 quân đối thủ cùng màu đứng chung ô thường
-  if (nextStepCount <= 51) {
-    const nextPos = getBoardPosition(piece.color, nextStepCount);
-    const isSafe = SAFE_ZONES.includes(nextPos);
-    if (!isSafe) {
-      // Tìm các quân đối thủ đang đứng ở ô đích
-      const opponentsAtDest = pieces.filter(p => {
-        const isTeammate = isTeammateColor(piece.color, p.color, mode);
-        return p.color !== piece.color && !isTeammate && p.position === nextPos;
-      });
-      
-      if (opponentsAtDest.length > 0) {
-        // Đếm theo từng màu đối thủ
-        const opponentColors = [...new Set(opponentsAtDest.map(p => p.color))];
-        for (const oppColor of opponentColors) {
-          const count = opponentsAtDest.filter(p => p.color === oppColor).length;
-          if (count > 1) {
-            // Có nhiều hơn 1 quân cùng màu của đối thủ đứng ở đây -> Chặn đường!
-            return false;
-          }
-        }
-      }
-    }
-  }
-
   return true;
 }
 
 // Lấy danh sách quân cờ hợp lệ có thể đi của một người chơi
 export function getValidPiecesToMove(color, diceValue, pieces, mode = 'classic') {
-  return pieces.filter(p => p.color === color && canPieceMove(p, diceValue, pieces, mode));
+  let targetColor = color;
+  if (mode === '2vs2') {
+    const myPieces = pieces.filter(p => p.color === color);
+    const allMyPiecesFinished = myPieces.length > 0 && myPieces.every(p => p.stepCount === 58);
+    if (allMyPiecesFinished) {
+      const teammateColor = getTeammateColor(color);
+      if (teammateColor) {
+        targetColor = teammateColor;
+      }
+    }
+  }
+  return pieces.filter(p => p.color === targetColor && canPieceMove(p, diceValue, pieces, mode));
 }
 
 // Đổ xúc xắc ngẫu nhiên từ 1 đến 6
@@ -179,7 +165,20 @@ export function movePieceInState(gameState, color, pieceId, diceValue) {
   if (!gameState.hasRolled || gameState.hasMoved) return gameState;
 
   const newState = JSON.parse(JSON.stringify(gameState)); // Deep clone
-  const piece = newState.pieces.find(p => p.color === color && p.id === pieceId);
+  
+  let targetColor = color;
+  if (newState.mode === '2vs2') {
+    const myPieces = newState.pieces.filter(p => p.color === color);
+    const allMyPiecesFinished = myPieces.length > 0 && myPieces.every(p => p.stepCount === 58);
+    if (allMyPiecesFinished) {
+      const teammateColor = getTeammateColor(color);
+      if (teammateColor) {
+        targetColor = teammateColor;
+      }
+    }
+  }
+
+  const piece = newState.pieces.find(p => p.color === targetColor && p.id === pieceId);
 
   if (!piece || !canPieceMove(piece, diceValue, newState.pieces)) {
     return gameState; // Không di chuyển được
@@ -246,6 +245,11 @@ export function movePieceInState(gameState, color, pieceId, diceValue) {
     newState.bonusRoll = true;
   }
 
+  // Reset chuỗi đổ 6 liên tiếp nếu nước đi này đá được đối thủ hoặc đưa quân về đích
+  if (hitOpponent || reachedHome) {
+    newState.consecutiveSixes = 0;
+  }
+
   // Thêm vào lịch sử
   newState.history.unshift({
     time: new Date().toLocaleTimeString(),
@@ -275,6 +279,15 @@ export function isTeammateColor(color1, color2, mode) {
   const team2 = ['green', 'blue'];
   return (team1.includes(color1) && team1.includes(color2)) || 
          (team2.includes(color1) && team2.includes(color2));
+}
+
+// Lấy màu của đồng đội trong chế độ 2vs2
+export function getTeammateColor(color) {
+  if (color === 'red') return 'yellow';
+  if (color === 'yellow') return 'red';
+  if (color === 'green') return 'blue';
+  if (color === 'blue') return 'green';
+  return null;
 }
 
 // Kiểm tra xem trò chơi đã kết thúc chưa
@@ -391,6 +404,7 @@ export function switchToNextTurn(gameState) {
     // Chuyển sang người tiếp theo trong danh sách players
     newState.turnIndex = (newState.turnIndex + 1) % players.length;
     newState.currentTurnColor = players[newState.turnIndex].color;
+    newState.consecutiveSixes = 0; // reset khi chuyển lượt
   }
 
   // Reset trạng thái lượt mới

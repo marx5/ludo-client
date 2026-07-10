@@ -28,7 +28,7 @@ export default function Dice3D({ value, isRolling, onRoll, disabled }) {
     <div 
       className={`dice-container ${disabled ? 'disabled' : ''} ${canRoll ? 'prompt-pulse' : ''}`} 
       onClick={handleDiceClick}
-      style={{ opacity: disabled ? 0.6 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+      style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
     >
       <div className={`cube ${getShowClass()}`}>
         {/* Mặt 1 */}
