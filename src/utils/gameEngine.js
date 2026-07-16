@@ -191,11 +191,10 @@ export function movePieceInState(gameState, color, pieceId, diceValue) {
   if (piece.position === -1 && diceValue === 6) {
     // Ra quân
     piece.stepCount = 1;
-    piece.position = START_POSITIONS[color];
-    eventMessage = `${newState.players.find(p => p.color === color)?.name} đã xuất quân!`;
-    
+    piece.position = START_POSITIONS[targetColor];
+    eventMessage = `${newState.players.find(p => p.color === targetColor)?.name} đã xuất quân!`;
     // Đánh dấu đã ra quân thành công lần đầu tiên
-    const playerObj = newState.players.find(p => p.color === color);
+    const playerObj = newState.players.find(p => p.color === targetColor);
     if (playerObj) {
       playerObj.hasReleasedFirstPiece = true;
       playerObj.pityCounter = 0;
@@ -203,14 +202,14 @@ export function movePieceInState(gameState, color, pieceId, diceValue) {
   } else {
     // Di chuyển quân
     piece.stepCount += diceValue;
-    const newPos = getBoardPosition(color, piece.stepCount);
+    const newPos = getBoardPosition(targetColor, piece.stepCount);
     piece.position = newPos;
 
-    eventMessage = `${newState.players.find(p => p.color === color)?.name} đã di chuyển quân #${pieceId + 1} thêm ${diceValue} ô.`;
+    eventMessage = `${newState.players.find(p => p.color === targetColor)?.name} đã di chuyển quân #${pieceId + 1} thêm ${diceValue} ô.`;
 
     if (piece.stepCount === 58) {
       reachedHome = true;
-      eventMessage = `${newState.players.find(p => p.color === color)?.name} đã đưa quân #${pieceId + 1} về đích!`;
+      eventMessage = `${newState.players.find(p => p.color === targetColor)?.name} đã đưa quân #${pieceId + 1} về đích!`;
     }
   }
 
@@ -363,29 +362,19 @@ export function switchToNextTurn(gameState) {
   if (gameState.status !== 'playing') return gameState;
 
   const newState = JSON.parse(JSON.stringify(gameState));
-  const { players, consecutiveSixes, bonusRoll, diceValue } = newState;
+  const { players, bonusRoll, diceValue } = newState;
 
   let skipToNext = true;
 
   // Nếu người chơi đổ được 6
   if (diceValue === 6) {
-    if (consecutiveSixes >= 2) {
-      // Đổ 6 ba lần liên tiếp -> Bị phạt mất lượt chơi và chuyển sang người tiếp theo
-      newState.history.unshift({
-        time: new Date().toLocaleTimeString(),
-        message: `${players[newState.turnIndex]?.name} đã đổ 6 ba lần liên tiếp và bị mất lượt!`
-      });
-      newState.consecutiveSixes = 0;
-      skipToNext = true;
-    } else {
-      // Được đổ tiếp (bonus)
-      newState.consecutiveSixes += 1;
-      skipToNext = false;
-      newState.history.unshift({
-        time: new Date().toLocaleTimeString(),
-        message: `${players[newState.turnIndex]?.name} được thêm lượt đổ do đổ được 6!`
-      });
-    }
+    // Được đổ tiếp (bonus). Việc đếm 3 lần 6 liên tiếp và phạt mất lượt được xử lý
+    // tại bước đổ xúc xắc (server: GameService / offline: useOfflineGame).
+    skipToNext = false;
+    newState.history.unshift({
+      time: new Date().toLocaleTimeString(),
+      message: `${players[newState.turnIndex]?.name} được thêm lượt đổ do đổ được 6!`
+    });
   } else {
     // Đổ xúc xắc bình thường, reset số lần đổ 6 liên tục
     newState.consecutiveSixes = 0;

@@ -117,7 +117,10 @@ export default function useOnlineGame(playerName, setGameMode, showModal) {
     // 6. Nhận cập nhật trạng thái bàn cờ từ server
     newSocket.on('game_state_updated', (updatedState) => {
       const oldState = gameStateRef.current;
-      const isNewRoll = updatedState.hasRolled && (!oldState || !oldState.hasRolled);
+      // Chỉ coi là lượt đổ mới khi thực sự có giá trị xúc xắc.
+      // Khi bị phạt 3 lần đổ 6 liên tiếp, server gửi hasRolled=true nhưng diceValue=null
+      // -> không phát animation lắc xúc xắc giả.
+      const isNewRoll = updatedState.hasRolled && updatedState.diceValue != null && (!oldState || !oldState.hasRolled);
       
       // Khắc phục lệch múi giờ (Clock Skew) bằng serverTime
       if (updatedState.serverTime) {
